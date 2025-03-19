@@ -43,7 +43,7 @@ func (a Operator) Read(ctx context.Context, current operator.TimeInterval, pageS
 }
 
 func (a Operator) Write(ctx context.Context, items []v1.AuditLog) (*v1.BulkResponse, error) {
-	return a.auditBackend.Create(ctx, v1.AuditLogTypeEE, a.clusterInfo, items)
+	return a.auditBackend.Create(ctx, a.auditType, a.clusterInfo, items)
 }
 
 func NewOperator(auditType v1.AuditLogType, backend bapi.AuditBackend, clusterInfo bapi.ClusterInfo) Operator {

@@ -41,7 +41,7 @@ func (f Operator) Read(ctx context.Context, current operator.TimeInterval, pageS
 }
 
 func (f Operator) Write(ctx context.Context, items []v1.RuntimeReport) (*v1.BulkResponse, error) {
-	reports := make([]v1.Report, len(items))
+	var reports []v1.Report
 	for _, item := range items {
 		reports = append(reports, item.Report)
 	}

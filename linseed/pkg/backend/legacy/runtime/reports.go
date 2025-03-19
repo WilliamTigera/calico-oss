@@ -226,6 +226,9 @@ func (b *runtimeReportBackend) List(ctx context.Context, i api.ClusterInfo, opts
 		if !b.singleIndex {
 			tenant, cluster = b.extractTenantAndCluster(h.Index)
 		}
+		if b.migrationMode {
+			l.Report.ID = h.Id
+		}
 		reports = append(reports, v1.RuntimeReport{ID: h.Id, Tenant: tenant, Cluster: cluster, Report: l.Report})
 	}
 
@@ -267,9 +270,14 @@ func (b *runtimeReportBackend) buildQuery(i bapi.ClusterInfo, opts *v1.RuntimeRe
 		return nil, err
 	}
 
-	tr := logtools.WithDefaultUntilNow(opts.GetTimeRange())
-	queryTimeRange := elastic.NewBoolQuery().Must(elastic.NewRangeQuery("generated_time").From(tr.From))
-	query.Must(queryTimeRange)
+	if b.migrationMode {
+		// Every request has at least a time-range limitation.
+		query.Filter(b.queryHelper.NewTimeRangeQuery(logtools.WithDefaultUntilNow(opts.TimeRange)))
+	} else {
+		tr := logtools.WithDefaultUntilNow(opts.GetTimeRange())
+		queryTimeRange := elastic.NewBoolQuery().Must(elastic.NewRangeQuery("generated_time").From(tr.From))
+		query.Must(queryTimeRange)
+	}
 
 	// If a selector was provided, parse it and add it in.
 	if sel := opts.Selector; len(sel) > 0 {

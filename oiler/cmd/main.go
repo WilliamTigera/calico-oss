@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -53,7 +54,7 @@ func main() {
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.MetricsPort), nil)
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to listen for new requests to query metrics")
 		}
@@ -100,7 +101,7 @@ func migrate(ctx context.Context, cluster string, cfg config.Config, primary mig
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kubernetes client")
 	}
-	storage := checkpoint.NewConfigMapStorage(k8sClient, cfg.Namespace, checkpoint.ConfigMapName(cfg.DataType, cfg.PrimaryTenantID, cluster))
+	storage := checkpoint.NewConfigMapStorage(k8sClient, cfg.Namespace, checkpoint.ConfigMapName(cfg.DataType, cluster, cfg.PrimaryTenantID))
 	start, err := storage.Read(ctx)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error reading checkpoint")

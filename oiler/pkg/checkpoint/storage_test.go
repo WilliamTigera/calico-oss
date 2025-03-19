@@ -140,3 +140,77 @@ func TestConfigMapStorage_Read(t *testing.T) {
 func ptrTime(time time.Time) *time.Time {
 	return &time
 }
+
+func TestConfigMapName(t *testing.T) {
+	tests := []struct {
+		name     string
+		dataType bapi.DataType
+		cluster  string
+		tenant   string
+		want     string
+	}{
+		{
+			name:     "empty tenant",
+			cluster:  "anyCluster",
+			tenant:   "",
+			dataType: bapi.FlowLogs,
+			want:     "flows-anyCluster",
+		},
+		{
+			name:     "full name",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.FlowLogs,
+			want:     "flows-anyCluster-anyTenant",
+		},
+		{
+			name:     "audit ee data type",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.AuditEELogs,
+			want:     "audit-ee-anyCluster-anyTenant",
+		},
+		{
+			name:     "audit kube data type",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.AuditKubeLogs,
+			want:     "audit-kube-anyCluster-anyTenant",
+		},
+		{
+			name:     "compliance reports",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.ReportData,
+			want:     "compliance-reports-anyCluster-anyTenant",
+		},
+		{
+			name:     "DNS threat feeds",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.DomainNameSet,
+			want:     "threatfeeds-domainnameset-anyCluster-anyTenant",
+		},
+		{
+			name:     "IP threat feeds",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.IPSet,
+			want:     "threatfeeds-ipset-anyCluster-anyTenant",
+		},
+		{
+			name:     "Benchmarks",
+			cluster:  "anyCluster",
+			tenant:   "anyTenant",
+			dataType: bapi.Benchmarks,
+			want:     "benchmark-results-anyCluster-anyTenant",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkpoint.ConfigMapName(tt.dataType, tt.cluster, tt.tenant); got != tt.want {
+				t.Errorf("ConfigMapName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
