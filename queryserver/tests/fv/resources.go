@@ -1775,10 +1775,6 @@ func qcStagedAdnDefaultTierAdjustment(p *client.Policy) {
 	case apiv3.KindStagedKubernetesNetworkPolicy:
 		p.Name = model.PolicyNamePrefixStaged + names.K8sNetworkPolicyNamePrefix + p.Name
 		p.Kind = apiv3.KindNetworkPolicy
-	default:
-		if p.Tier == names.DefaultTierName && !strings.HasPrefix(p.Name, names.DefaultTierName) {
-			p.Name = strings.Join([]string{names.DefaultTierName, p.Name}, ".")
-		}
 	}
 }
 
