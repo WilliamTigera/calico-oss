@@ -22,7 +22,7 @@ spec:
       # Modify this image name, if you have re-tagged the image and are using a local
       # docker image repository.
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      image: gcr.io/unique-caldron-775/cnx/tigera/compliance-reporter:master
+      image: gcr.io/unique-caldron-775/cnx/tigera/compliance-reporter:release-calient-v3.21
       # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       env:
         # Modify this value with name of an existing globalreport resource.

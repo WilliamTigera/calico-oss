@@ -49,3 +49,5 @@ blocks:
       env_vars:
         - name: OPERATOR_REGISTRY
           value: gcr.io/unique-caldron-775/cnx
+        - name: MANAGER_BRANCH
+          value: release-calient-v3.21

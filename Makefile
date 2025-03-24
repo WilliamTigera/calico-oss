@@ -315,8 +315,8 @@ release-test:
 # - OSS_BRANCH: OSS branch to merge.
 OSS_REMOTE?=open-source
 PRIVATE_REMOTE?=origin
-OSS_BRANCH?=master
-PRIVATE_BRANCH?=master
+OSS_BRANCH?=release-v3.30
+PRIVATE_BRANCH?=release-calient-v3.21
 merge-open:
 	git fetch $(OSS_REMOTE)
 	git branch -D $(USER)-merge-oss; git checkout -B $(USER)-merge-oss-$(OSS_BRANCH)

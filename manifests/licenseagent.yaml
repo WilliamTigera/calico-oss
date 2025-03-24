@@ -82,7 +82,7 @@ spec:
         kubernetes.io/os: linux
       containers:
         - name: license-agent
-          image: gcr.io/unique-caldron-775/cnx/tigera/license-agent:master
+          image: gcr.io/unique-caldron-775/cnx/tigera/license-agent:release-calient-v3.21
           imagePullPolicy: IfNotPresent
           env:
             - name: DATASTORE_TYPE

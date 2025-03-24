@@ -25,7 +25,7 @@ spec:
   serviceAccountName: calicoctl
   containers:
     - name: calicoctl
-      image: gcr.io/unique-caldron-775/cnx/tigera/calicoctl:master
+      image: gcr.io/unique-caldron-775/cnx/tigera/calicoctl:release-calient-v3.21
       command:
         - calicoctl
       args:
