@@ -73,7 +73,7 @@ func (w *L7WorkloadIPSetCalculator) InitializeIPSet() {
 // PolicyMatchListener callbacks from the ActiveRulesCalculator; we record which local endpoints match
 // the policies and then further filter to only ALP policies.
 
-func (w *L7WorkloadIPSetCalculator) OnPolicyMatch(policyKey model.PolicyKey, endpointKey model.Key) {
+func (w *L7WorkloadIPSetCalculator) OnPolicyMatch(policyKey model.PolicyKey, endpointKey model.EndpointKey) {
 	// We only care about workload endpoints (not host endpoints).
 	wepKey, ok := endpointKey.(model.WorkloadEndpointKey)
 	if !ok {
@@ -107,7 +107,7 @@ func (w *L7WorkloadIPSetCalculator) OnPolicyMatch(policyKey model.PolicyKey, end
 	w.flush()
 }
 
-func (w *L7WorkloadIPSetCalculator) OnPolicyMatchStopped(policyKey model.PolicyKey, endpointKey model.Key) {
+func (w *L7WorkloadIPSetCalculator) OnPolicyMatchStopped(policyKey model.PolicyKey, endpointKey model.EndpointKey) {
 	// We only care about workload endpoints, not host endpoints.
 	wepKey, ok := endpointKey.(model.WorkloadEndpointKey)
 	if !ok {
@@ -140,8 +140,8 @@ func (w *L7WorkloadIPSetCalculator) OnPolicyMatchStopped(policyKey model.PolicyK
 	w.flush()
 }
 
-func (w *L7WorkloadIPSetCalculator) OnEgressSelectorMatch(_ string, _ interface{})        {} // Not needed.
-func (w *L7WorkloadIPSetCalculator) OnEgressSelectorMatchStopped(_ string, _ interface{}) {} // Not needed.
+func (w *L7WorkloadIPSetCalculator) OnEgressSelectorMatch(_ string, _ model.EndpointKey)        {} // Not needed.
+func (w *L7WorkloadIPSetCalculator) OnEgressSelectorMatchStopped(_ string, _ model.EndpointKey) {} // Not needed.
 
 func (w *L7WorkloadIPSetCalculator) OnResourceUpdate(update api.Update) (_ bool) {
 	switch k := update.Key.(type) {

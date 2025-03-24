@@ -47,7 +47,7 @@ type State struct {
 	ExpectedVTEPs                        set.Set[types.VXLANTunnelEndpointUpdate]
 	ExpectedIPSecBindings                set.Set[mock.IPSecBinding]
 	ExpectedIPSecBlacklist               set.Set[string]
-	ExpectedCachedRemoteEndpoints        []*calc.EndpointData
+	ExpectedCachedRemoteEndpoints        []calc.EndpointData
 	ExpectedWireguardEndpoints           set.Set[types.WireguardEndpointUpdate]
 	ExpectedWireguardV6Endpoints         set.Set[types.WireguardEndpointV6Update]
 	ExpectedEndpointPolicyOrder          map[string][]mock.TierInfo
@@ -82,7 +82,7 @@ func NewState() State {
 		ExpectedVTEPs:                        set.New[types.VXLANTunnelEndpointUpdate](),
 		ExpectedIPSecBindings:                set.New[mock.IPSecBinding](),
 		ExpectedIPSecBlacklist:               nil, // Created on demand, nil means "ignore"
-		ExpectedCachedRemoteEndpoints:        []*calc.EndpointData{},
+		ExpectedCachedRemoteEndpoints:        []calc.EndpointData{},
 		ExpectedWireguardEndpoints:           set.New[types.WireguardEndpointUpdate](),
 		ExpectedWireguardV6Endpoints:         set.New[types.WireguardEndpointV6Update](),
 		ExpectedEndpointPolicyOrder:          make(map[string][]mock.TierInfo),
@@ -235,7 +235,7 @@ func (s State) withEndpointEgressData(id string, egressData calc.EndpointEgressD
 	return newState
 }
 
-func (s State) withRemoteEndpoint(ed *calc.EndpointData) State {
+func (s State) withRemoteEndpoint(ed calc.EndpointData) State {
 	newState := s.Copy()
 	newState.ExpectedCachedRemoteEndpoints = append(newState.ExpectedCachedRemoteEndpoints, ed)
 	return newState

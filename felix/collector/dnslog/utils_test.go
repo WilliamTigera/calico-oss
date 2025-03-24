@@ -109,11 +109,11 @@ var _ = Describe("DNS log utility functions", func() {
 
 var _ = Describe("gopacket to DNS log conversion function", func() {
 	Describe("newMetaSpecFromUpdate", func() {
-		var clientEP, serverEP *calc.EndpointData
+		var clientEP, serverEP calc.EndpointData
 		var clientIP, serverIP net.IP
 		BeforeEach(func() {
-			clientEP = &calc.EndpointData{Key: model.HostEndpointKey{}, Endpoint: &model.HostEndpoint{}}
-			serverEP = &calc.EndpointData{Key: model.HostEndpointKey{}, Endpoint: &model.HostEndpoint{}}
+			clientEP = &calc.RemoteEndpointData{CommonEndpointData: calc.CalculateCommonEndpointData(model.HostEndpointKey{}, &model.HostEndpoint{})}
+			serverEP = &calc.RemoteEndpointData{CommonEndpointData: calc.CalculateCommonEndpointData(model.HostEndpointKey{}, &model.HostEndpoint{})}
 			clientIP = net.ParseIP("1.2.3.4")
 			serverIP = net.ParseIP("8.8.8.8")
 		})

@@ -113,21 +113,13 @@ var _ = Describe("Test L7 Aggregation options", func() {
 			WorkloadID:     "default/remoteworkloadid1",
 			EndpointID:     "remoteepid1",
 		}
-		ed1 := &calc.EndpointData{
-			Key:      remoteWlEpKey1,
-			Endpoint: remoteWlEp1,
-			IsLocal:  false,
-		}
+		ed1 := calc.CalculateRemoteEndpoint(remoteWlEpKey1, remoteWlEp1)
 		remoteWlEpKey2 := model.WorkloadEndpointKey{
 			OrchestratorID: "orchestrator",
 			WorkloadID:     "default/remoteworkloadid2",
 			EndpointID:     "remoteepid2",
 		}
-		ed2 := &calc.EndpointData{
-			Key:      remoteWlEpKey2,
-			Endpoint: remoteWlEp2,
-			IsLocal:  false,
-		}
+		ed2 := calc.CalculateRemoteEndpoint(remoteWlEpKey2, remoteWlEp2)
 
 		update = Update{
 			Tuple:            tuple.Make(remoteIp1, remoteIp2, proto_tcp, srcPort, dstPort),

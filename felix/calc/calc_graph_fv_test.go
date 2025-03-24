@@ -858,11 +858,11 @@ func describeAsyncTests(baseTests []StateList) {
 						}
 					}
 					state := test[len(test)-1]
-					getCachedRemoteEndpoints := func() []*EndpointData {
-						remoteEds := []*EndpointData{}
+					getCachedRemoteEndpoints := func() []EndpointData {
+						remoteEds := []EndpointData{}
 						eds := lookupsCache.GetAllEndpointData()
 						for _, ed := range eds {
-							if ed.IsLocal {
+							if ed.IsLocal() {
 								continue
 							}
 							remoteEds = append(remoteEds, ed)
@@ -1084,11 +1084,11 @@ func doStateSequenceTest(expandedTest StateList, flushStrategy flushStrategy) {
 		}
 	}
 
-	getCachedRemoteEndpoints := func() []*EndpointData {
-		remoteEds := []*EndpointData{}
+	getCachedRemoteEndpoints := func() []EndpointData {
+		remoteEds := []EndpointData{}
 		eds := lookupsCache.GetAllEndpointData()
 		for _, ed := range eds {
-			if ed.IsLocal {
+			if ed.IsLocal() {
 				continue
 			}
 			remoteEds = append(remoteEds, ed)

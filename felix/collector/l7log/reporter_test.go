@@ -92,7 +92,7 @@ func (d *testL7Reporter) getLogs() []*L7Log {
 var _ = Describe("L7 Log Reporter", func() {
 
 	var (
-		ed1, ed2, ed3 *calc.EndpointData
+		ed1, ed2, ed3 calc.EndpointData
 		dispatcher    *testL7Reporter
 		flushTrigger  chan time.Time
 		r             *L7Reporter
@@ -123,31 +123,21 @@ var _ = Describe("L7 Log Reporter", func() {
 			WorkloadID:     "default/remoteworkloadid1",
 			EndpointID:     "remoteepid1",
 		}
-		ed1 = &calc.EndpointData{
-			Key:      remoteWlEpKey1,
-			Endpoint: remoteWlEp1,
-			IsLocal:  false,
-		}
+		ed1 = calc.CalculateRemoteEndpoint(remoteWlEpKey1, remoteWlEp1)
 		remoteWlEpKey2 := model.WorkloadEndpointKey{
 			OrchestratorID: "orchestrator",
 			WorkloadID:     "default/remoteworkloadid2",
 			EndpointID:     "remoteepid2",
 		}
-		ed2 = &calc.EndpointData{
-			Key:      remoteWlEpKey2,
-			Endpoint: remoteWlEp2,
-			IsLocal:  false,
-		}
+		ed2 = calc.CalculateRemoteEndpoint(remoteWlEpKey2, remoteWlEp2)
 		localWlEPKey1 := model.WorkloadEndpointKey{
 			Hostname:       "localhost",
 			OrchestratorID: "orchestrator",
 			WorkloadID:     "default/localworkloadid1",
 			EndpointID:     "localepid1",
 		}
-		ed3 = &calc.EndpointData{
-			Key:      localWlEPKey1,
-			Endpoint: localWlEp1,
-			IsLocal:  true,
+		ed3 = &calc.LocalEndpointData{
+			CommonEndpointData: calc.CalculateCommonEndpointData(localWlEPKey1, localWlEp1),
 			Ingress: &calc.MatchData{
 				PolicyMatches: map[calc.PolicyID]int{
 					calc.PolicyID{Name: "policy1", Tier: "default"}: 0,

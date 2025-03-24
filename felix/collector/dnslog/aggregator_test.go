@@ -18,12 +18,12 @@ import (
 
 var _ = Describe("DNS log aggregator", func() {
 	var l *Aggregator
-	var clientEP, serverEP *calc.EndpointData
+	var clientEP, serverEP calc.EndpointData
 	var clientIP, serverIP net.IP
 	BeforeEach(func() {
 		l = NewAggregator()
-		clientEP = &calc.EndpointData{Key: model.HostEndpointKey{}, Endpoint: &model.HostEndpoint{}}
-		serverEP = &calc.EndpointData{Key: model.HostEndpointKey{}, Endpoint: &model.HostEndpoint{}}
+		clientEP = &calc.RemoteEndpointData{CommonEndpointData: calc.CalculateCommonEndpointData(model.HostEndpointKey{}, &model.HostEndpoint{})}
+		serverEP = &calc.RemoteEndpointData{CommonEndpointData: calc.CalculateCommonEndpointData(model.HostEndpointKey{}, &model.HostEndpoint{})}
 		clientIP = net.ParseIP("1.2.3.4")
 		serverIP = net.ParseIP("8.8.8.8")
 	})

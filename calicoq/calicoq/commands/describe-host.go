@@ -448,20 +448,20 @@ func (cbs *describeCmd) onPolicyUpdate(update api.Update) (filterOut bool) {
 	return false
 }
 
-func (cbs *describeCmd) OnPolicyMatch(policyKey model.PolicyKey, endpointKey model.Key) {
+func (cbs *describeCmd) OnPolicyMatch(policyKey model.PolicyKey, endpointKey model.EndpointKey) {
 	log.Infof("Policy %v.%v now matches %v", policyKey.Tier, policyKey.Name, endpointKey)
 	cbs.epIDToPolIDs[endpointKey][policyKey] = true
 }
 
-func (cbs *describeCmd) OnPolicyMatchStopped(policyKey model.PolicyKey, endpointKey model.Key) {
+func (cbs *describeCmd) OnPolicyMatchStopped(policyKey model.PolicyKey, endpointKey model.EndpointKey) {
 	// Matt: Maybe we should remove something here, but it's an edge case
 }
 
-func (cbs *describeCmd) OnEgressSelectorMatch(es string, endpointKey interface{}) {
+func (cbs *describeCmd) OnEgressSelectorMatch(es string, endpointKey model.EndpointKey) {
 	// We don't currently analyze egress selectors.
 }
 
-func (cbs *describeCmd) OnEgressSelectorMatchStopped(es string, endpointKey interface{}) {
+func (cbs *describeCmd) OnEgressSelectorMatchStopped(es string, endpointKey model.EndpointKey) {
 	// We don't currently analyze egress selectors.
 }
 

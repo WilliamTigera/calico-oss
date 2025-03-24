@@ -15,9 +15,9 @@ import (
 
 type Update struct {
 	ClientIP       net.IP
-	ClientEP       *calc.EndpointData
+	ClientEP       calc.EndpointData
 	ServerIP       net.IP
-	ServerEP       *calc.EndpointData
+	ServerEP       calc.EndpointData
 	DNS            *layers.DNS
 	LatencyIfKnown *time.Duration
 }

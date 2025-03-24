@@ -324,10 +324,7 @@ var localEp1With3NodesSharingIPAndRemoteEp = localEp1With3NodesSharingIP.withKVU
 	"10.0.1.1",
 	"10.0.1.2",
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &commRemoteWlEp1,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &commRemoteWlEp1),
 ).withName("Local endpoint 1 with triple of hosts sharing IP and a remote endpoint")
 
 var localEp1With3NodesSharingIPAndRemoteEps = localEp1With3NodesSharingIPAndRemoteEp.withKVUpdates(
@@ -343,10 +340,7 @@ var localEp1With3NodesSharingIPAndRemoteEps = localEp1With3NodesSharingIPAndRemo
 }).withIPSecBlacklist(
 	"10.0.2.2",
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey2,
-		Endpoint: &commRemoteWlEp2,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey2, &commRemoteWlEp2),
 ).withName("Local endpoint 1 with triple of hosts sharing IP and a remote endpoints on both remote hosts")
 
 var localAndRemoteEndpointsWithMissingRemoteNode = localEp1WithNode.withKVUpdates(
@@ -362,10 +356,7 @@ var localAndRemoteEndpointsWithMissingRemoteNode = localEp1WithNode.withKVUpdate
 	"10.0.1.1",
 	"10.0.1.2",
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &commRemoteWlEp1,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &commRemoteWlEp1),
 ).withName("Local endpoint 1 with remote endpoint but missing remote node")
 
 // Different local endpoint with a host IP, should generate an IPsec binding for each IP of the endpoint.
@@ -616,10 +607,7 @@ var remoteWlEp3 = WorkloadEndpoint{
 var remoteWlEp1WithPolicyAndTier = withPolicyAndTier.withKVUpdates(
 	KVPair{Key: remoteWlEpKey1, Value: &remoteWlEp1},
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &remoteWlEp1,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &remoteWlEp1),
 ).withName("1 remote endpoint")
 
 // localEpAndRemoteEpWithPolicyAndTier contains one local and one remote endpoint.
@@ -659,10 +647,7 @@ var localEpAndRemoteEpWithPolicyAndTier = withPolicyAndTier.withKVUpdates(
 		},
 	},
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey3,
-		Endpoint: &remoteWlEp3,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey3, &remoteWlEp3),
 ).withRoutes(
 	// Routes for the local WEPs.
 	routelocalWlTenDotOne,
@@ -675,15 +660,9 @@ var remoteEpsWithPolicyAndTier = withPolicyAndTier.withKVUpdates(
 	KVPair{Key: remoteWlEpKey1, Value: &remoteWlEp1},
 	KVPair{Key: remoteWlEpKey3, Value: &remoteWlEp3},
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &remoteWlEp1,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &remoteWlEp1),
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey3,
-		Endpoint: &remoteWlEp3,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey3, &remoteWlEp3),
 ).withName("2 remote endpoints")
 
 var commercialTests = []StateList{
@@ -1184,10 +1163,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -1219,10 +1195,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -1263,15 +1236,9 @@ var (
 			Value: egressGatewayPolicyVal1,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -1327,15 +1294,9 @@ var (
 			Value: egressGatewayPolicyVal2,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -1460,10 +1421,7 @@ var (
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withEndpointEgressData(
 		"orch/wep1o/ep1",
 		calc.EndpointEgressData{
@@ -1520,10 +1478,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1p/ep1",
 		[]mock.TierInfo{},
@@ -1560,10 +1515,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1p/ep1",
 		[]mock.TierInfo{},
@@ -1605,15 +1557,9 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1p/ep1",
 		[]mock.TierInfo{},
@@ -1718,10 +1664,7 @@ var (
 			Value: gatewayEndpoint3,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withEndpoint(
 		"orch/gw1/ep1",
 		[]mock.TierInfo{},
@@ -1778,10 +1721,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -1804,10 +1744,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey,
-			Endpoint: gatewayEndpoint,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey, gatewayEndpoint),
 	).withEndpoint(
 		"orch/wep1p/ep1",
 		[]mock.TierInfo{},
@@ -1926,10 +1863,7 @@ var (
 			Value: gatewayEndpoint,
 		},
 	).withRemoteEndpoint(
-		&calc.EndpointData{
-			Key:      gatewayKey3,
-			Endpoint: gatewayEndpoint3,
-		},
+		calc.CalculateRemoteEndpoint(gatewayKey3, gatewayEndpoint3),
 	).withEndpoint(
 		"orch/wep1o/ep1",
 		[]mock.TierInfo{},
@@ -2151,10 +2085,7 @@ var (
 				Value: gateway,
 			},
 		).withRemoteEndpoint(
-			&calc.EndpointData{
-				Key:      gatewayKey,
-				Endpoint: gateway,
-			},
+			calc.CalculateRemoteEndpoint(gatewayKey, gateway),
 		).withEndpoint(
 			"orch/wep1o/ep1",
 			[]mock.TierInfo{},
