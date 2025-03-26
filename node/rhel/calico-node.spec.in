@@ -32,7 +32,9 @@ Calico node handles networking and policy for Calico.
 %install
 install -m 755 -d %{buildroot}%{_bindir}
 install -m 755 %{_builddir}/%{name}/%{name} %{buildroot}%{_bindir}/
+install -m 755 %{_builddir}/%{name}/calico-noncluster-host-init %{buildroot}%{_bindir}/
 install -m 755 -d %{buildroot}%{_sysconfdir}/calico/%{name}
+install -m 644 %{_builddir}/%{name}/%{name}.conf %{buildroot}%{_sysconfdir}/calico/%{name}/
 install -m 644 %{_builddir}/%{name}/%{name}.env %{buildroot}%{_sysconfdir}/calico/%{name}/
 install -m 755 -d %{buildroot}%{_prefix}/lib/calico/bpf
 install -m 644 %{_builddir}/%{name}/filesystem/usr/lib/calico/bpf/*.o %{buildroot}%{_prefix}/lib/calico/bpf/
@@ -51,13 +53,18 @@ install -m 755 -d %{buildroot}%{_rundir}/calico
 %systemd_postun_with_restart %{name}.service
 
 %files
+%config %{_sysconfdir}/calico/%{name}/%{name}.conf
 %config(noreplace) %{_sysconfdir}/calico/%{name}/%{name}.env
 %attr(0770,root,calico) %dir %{_rundir}/calico
 %dir %{_prefix}/lib/calico
 %{_bindir}/%{name}
+%{_bindir}/calico-noncluster-host-init
 %{_prefix}/lib/calico/bpf/*.o
 %{_unitdir}/%{name}.service
 
 %changelog
+* Thu Mar 13 2025 Jiawei Huang <jiawei@tigera.io> - 3.21.0-2.0-1
+- Add support for scaling with Typha
+
 * Thu Aug 22 2024 Jiawei Huang <jiawei@tigera.io> - 3.20.0-1.0-1
 - Initial Calico Node package

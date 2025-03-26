@@ -329,7 +329,7 @@ func main() {
 		})
 	}
 
-	if cfg.EnableNonclusterHostLogIngestion {
+	if cfg.EnableNonclusterHost {
 		targetList = append(targetList, bootstrap.Target{
 			Path:           "/ingestion/api/v1/",
 			Dest:           cfg.LinseedEndpoint,

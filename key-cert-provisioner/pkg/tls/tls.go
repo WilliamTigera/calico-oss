@@ -85,7 +85,7 @@ func CreateX509CSR(config *cfg.Config) (*X509CSR, error) {
 	csrTemplate := x509.CertificateRequest{
 		Subject:            subj,
 		DNSNames:           config.DNSNames,
-		IPAddresses:        config.IPAddress,
+		IPAddresses:        config.IPAddresses,
 		SignatureAlgorithm: SignatureAlgorithm(config.SignatureAlgorithm),
 		ExtraExtensions: []pkix.Extension{
 			{

@@ -35,7 +35,7 @@ var _ = Describe("Config test", func() {
 		Expect(os.Setenv("VOLTRON_OIDC_AUTH_USERNAME_PREFIX", usernamePrefix)).NotTo(HaveOccurred())
 		Expect(os.Setenv("VOLTRON_OIDC_AUTH_GROUPS_PREFIX", groupsPrefix)).NotTo(HaveOccurred())
 		Expect(os.Setenv("VOLTRON_OIDC_AUTH_GROUPS_CLAIM", groupsClaim)).NotTo(HaveOccurred())
-		Expect(os.Setenv("VOLTRON_ENABLE_NONCLUSTER_HOST_LOG_INGESTION", enabled)).NotTo(HaveOccurred())
+		Expect(os.Setenv("VOLTRON_ENABLE_NONCLUSTER_HOST", enabled)).NotTo(HaveOccurred())
 	})
 
 	It("should parse the dex config properly", func() {
@@ -66,6 +66,6 @@ var _ = Describe("Config test", func() {
 		cfg := config.Config{}
 		err := envconfig.Process("VOLTRON", &cfg)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(cfg.EnableNonclusterHostLogIngestion).To(BeTrue())
+		Expect(cfg.EnableNonclusterHost).To(BeTrue())
 	})
 })

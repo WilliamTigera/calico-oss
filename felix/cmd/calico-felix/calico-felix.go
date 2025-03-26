@@ -29,6 +29,7 @@ Usage:
 
 Options:
   -c --config-file=<filename>   Config file to load [default: /etc/calico/felix.cfg].
+  --noncluster-host             Run in non-cluster host mode.
   --version                     Print the version and exit.
 `
 
@@ -45,7 +46,8 @@ func main() {
 		log.Fatalf("Failed to parse usage, exiting: %v", err)
 	}
 	configFile := arguments["--config-file"].(string)
+	nonClusterHost := arguments["--noncluster-host"].(bool)
 
 	// Execute felix.
-	daemon.Run(configFile, buildinfo.GitVersion, buildinfo.GitRevision, buildinfo.BuildDate)
+	daemon.Run(configFile, buildinfo.GitVersion, buildinfo.GitRevision, buildinfo.BuildDate, nonClusterHost)
 }

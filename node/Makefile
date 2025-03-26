@@ -92,6 +92,7 @@ NODE_CONTAINER_CREATED=.calico_node.created-$(ARCH)
 NODE_CONTAINER_FIPS_CREATED=.calico_node.created-$(ARCH)-fips
 WINDOWS_BINARY = $(NODE_CONTAINER_BIN_DIR)/calico-node.exe
 TOOLS_MOUNTNS_BINARY = $(NODE_CONTAINER_BIN_DIR)/mountns-$(ARCH)
+NONCLUSTER_HOST_INIT_BINARY = $(NODE_CONTAINER_BIN_DIR)/calico-noncluster-host-init-$(ARCH)
 NODE_RELEASE_VERSION?=$(call git-release-tag-from-dev-tag)
 
 WINDOWS_INSTALL_SCRIPT := dist/install-calico-windows.ps1
@@ -212,7 +213,7 @@ clean-windows: clean-windows-builder
 ###############################################################################
 # Building the binary
 ###############################################################################
-build: $(NODE_CONTAINER_MARKER) $(TOOLS_MOUNTNS_BINARY)
+build: $(NODE_CONTAINER_MARKER) $(TOOLS_MOUNTNS_BINARY) $(NONCLUSTER_HOST_INIT_BINARY)
 
 # Pull in config from confd.
 filesystem/etc/calico/confd/conf.d: $(shell find ../confd/etc/calico/confd/conf.d -type f)
@@ -274,6 +275,8 @@ else
 	$(call build_binary, ./cmd/mountns, $@)
 endif
 
+$(NONCLUSTER_HOST_INIT_BINARY):
+	$(call build_binary, ./cmd/calico-noncluster-host-init, $@)
 
 ###############################################################################
 # Building the image
@@ -299,10 +302,11 @@ $(NODE_CONTAINER_FIPS_CREATED): $(REMOTE_DEPS) Dockerfile.$(ARCH) $(NODE_CONTAIN
 # Package
 ###############################################################################
 .PHONY: init-package
-init-package: $(NODE_CONTAINER_BINARY)
+init-package: $(NODE_CONTAINER_BINARY) $(NONCLUSTER_HOST_INIT_BINARY)
 	cp $(NODE_CONTAINER_BINARY) calico-node
-	tar zcf calico-node.tar.gz calico-node calico-node.env calico-node.service filesystem/usr/lib/calico/bpf
-	rm -f calico-node
+	cp $(NONCLUSTER_HOST_INIT_BINARY) calico-noncluster-host-init
+	tar zcf calico-node.tar.gz calico-node calico-noncluster-host-init calico-node.conf calico-node.env calico-node.service filesystem/usr/lib/calico/bpf
+	rm -f calico-node calico-noncluster-host-init
 
 .PHONY: package
 package: calico-node.rhel8 calico-node.rhel9

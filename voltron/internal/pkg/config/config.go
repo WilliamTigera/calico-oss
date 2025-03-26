@@ -60,32 +60,32 @@ type Config struct {
 	// K8sClientBurst => rest.Config.Burst
 	K8sClientBurst int `default:"1000" split_words:"true"`
 
-	KeepAliveEnable                  bool   `default:"true" split_words:"true"`
-	KeepAliveInterval                int    `default:"100" split_words:"true"`
-	K8sEndpoint                      string `default:"https://kubernetes.default" split_words:"true"`
-	ComplianceEndpoint               string `default:"https://compliance.tigera-compliance.svc.cluster.local" split_words:"true"`
-	ComplianceCABundlePath           string `default:"/certs/compliance/tls.crt" split_words:"true"`
-	ComplianceInsecureTLS            bool   `default:"false" split_words:"true"`
-	EnableCompliance                 bool   `default:"true" split_words:"true"`
-	EnableNonclusterHostLogIngestion bool   `default:"false" split_words:"true"`
-	ElasticEndpoint                  string `default:"https://127.0.0.1:8443" split_words:"true"`
-	NginxEndpoint                    string `default:"http://127.0.0.1:8080" split_words:"true"`
-	PProf                            bool   `default:"false"`
-	EnableMultiClusterManagement     bool   `default:"false" split_words:"true"`
-	KibanaEndpoint                   string `default:"https://tigera-secure-kb-http.tigera-kibana.svc:5601" split_words:"true"`
-	KibanaBasePath                   string `default:"/tigera-kibana" split_words:"true"`
-	KibanaCABundlePath               string `default:"/certs/kibana/tls.crt" split_words:"true"`
-	PacketCaptureCABundlePath        string `default:"/certs/packetcapture/tls.crt" split_words:"true"`
-	PacketCaptureEndpoint            string `default:"https://tigera-packetcapture.tigera-packetcapture.svc" split_words:"true"`
-	EnableImageAssurance             bool   `split_words:"true"`
-	ImageAssuranceCABundlePath       string `split_words:"true"`
-	ImageAssuranceEndpoint           string `split_words:"true"`
-	PrometheusCABundlePath           string `default:"/certs/prometheus/tls.crt" split_words:"true"`
-	PrometheusPath                   string `default:"/api/v1/namespaces/tigera-prometheus/services/calico-node-prometheus:9090/proxy/" split_words:"true"`
-	PrometheusEndpoint               string `default:"https://prometheus-http-api.tigera-prometheus.svc:9090" split_words:"true"`
-	QueryserverPath                  string `default:"/api/v1/namespaces/tigera-system/services/https:tigera-api:8080/proxy/" split_words:"true"`
-	QueryserverEndpoint              string `default:"https://tigera-api.tigera-system.svc:8080" split_words:"true"`
-	QueryserverCABundlePath          string `default:"/etc/pki/tls/certs/tigera-ca-bundle.crt" split_words:"true"`
+	KeepAliveEnable              bool   `default:"true" split_words:"true"`
+	KeepAliveInterval            int    `default:"100" split_words:"true"`
+	K8sEndpoint                  string `default:"https://kubernetes.default" split_words:"true"`
+	ComplianceEndpoint           string `default:"https://compliance.tigera-compliance.svc.cluster.local" split_words:"true"`
+	ComplianceCABundlePath       string `default:"/certs/compliance/tls.crt" split_words:"true"`
+	ComplianceInsecureTLS        bool   `default:"false" split_words:"true"`
+	EnableCompliance             bool   `default:"true" split_words:"true"`
+	EnableNonclusterHost         bool   `default:"false" split_words:"true"`
+	ElasticEndpoint              string `default:"https://127.0.0.1:8443" split_words:"true"`
+	NginxEndpoint                string `default:"http://127.0.0.1:8080" split_words:"true"`
+	PProf                        bool   `default:"false"`
+	EnableMultiClusterManagement bool   `default:"false" split_words:"true"`
+	KibanaEndpoint               string `default:"https://tigera-secure-kb-http.tigera-kibana.svc:5601" split_words:"true"`
+	KibanaBasePath               string `default:"/tigera-kibana" split_words:"true"`
+	KibanaCABundlePath           string `default:"/certs/kibana/tls.crt" split_words:"true"`
+	PacketCaptureCABundlePath    string `default:"/certs/packetcapture/tls.crt" split_words:"true"`
+	PacketCaptureEndpoint        string `default:"https://tigera-packetcapture.tigera-packetcapture.svc" split_words:"true"`
+	EnableImageAssurance         bool   `split_words:"true"`
+	ImageAssuranceCABundlePath   string `split_words:"true"`
+	ImageAssuranceEndpoint       string `split_words:"true"`
+	PrometheusCABundlePath       string `default:"/certs/prometheus/tls.crt" split_words:"true"`
+	PrometheusPath               string `default:"/api/v1/namespaces/tigera-prometheus/services/calico-node-prometheus:9090/proxy/" split_words:"true"`
+	PrometheusEndpoint           string `default:"https://prometheus-http-api.tigera-prometheus.svc:9090" split_words:"true"`
+	QueryserverPath              string `default:"/api/v1/namespaces/tigera-system/services/https:tigera-api:8080/proxy/" split_words:"true"`
+	QueryserverEndpoint          string `default:"https://tigera-api.tigera-system.svc:8080" split_words:"true"`
+	QueryserverCABundlePath      string `default:"/etc/pki/tls/certs/tigera-ca-bundle.crt" split_words:"true"`
 
 	LinseedEndpoint     string `default:"https://tigera-linseed.tigera-elasticsearch.svc.cluster.local" split_words:"true"`
 	LinseedCABundlePath string `default:"/etc/pki/tls/certs/tigera-ca-bundle.crt" split_words:"true"`

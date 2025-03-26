@@ -54516,8 +54516,12 @@ spec:
             properties:
               endpoint:
                 description: 'Location of the log ingestion point for non-cluster
-                  hosts. example: https://1.2.3.4:443'
+                  hosts. For example: https://1.2.3.4:443'
                 pattern: ^https://.+$
+                type: string
+              typhaEndpoint:
+                description: 'Location of the Typha endpoint for non-cluster host
+                  Felix and Typha communication. For example: 5.6.7.8:5473'
                 type: string
             required:
             - endpoint
@@ -57487,7 +57491,21 @@ rules:
       - list
       - get
       - watch
+  - apiGroups:
+      - projectcalico.org
+    resources:
+      - hostendpoints
+    verbs:
+      - list
+      - get
+      - watch
   # Add the permissions to monitor the status of certificate signing requests when certificate management is enabled.
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
   - apiGroups:
       - certificates.k8s.io
     resources:

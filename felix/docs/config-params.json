@@ -268,8 +268,8 @@
           "Required": false,
           "OnParseFailure": "ReplaceWithDefault",
           "AllowedConfigSources": "LocalOnly",
-          "Description": "Path to the TLS CA file to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.",
-          "DescriptionHTML": "<p>Path to the TLS CA file to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.</p>",
+          "Description": "Path to the TLS CA file to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the CA file is extracted from the\ntigera-ca-bundle ConfigMap under the TyphaK8sNamespace namespace.",
+          "DescriptionHTML": "<p>Path to the TLS CA file to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the CA file is extracted from the\ntigera-ca-bundle ConfigMap under the TyphaK8sNamespace namespace.</p>",
           "UserEditable": true,
           "GoType": "",
           "OpenSourceOnly": false
@@ -322,8 +322,8 @@
           "Required": false,
           "OnParseFailure": "ReplaceWithDefault",
           "AllowedConfigSources": "LocalOnly",
-          "Description": "Path to the TLS certificate to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.",
-          "DescriptionHTML": "<p>Path to the TLS certificate to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.</p>",
+          "Description": "Path to the TLS certificate to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the certificate will be signed by the\nin-cluster Tigera operator signer.",
+          "DescriptionHTML": "<p>Path to the TLS certificate to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the certificate will be signed by the\nin-cluster Tigera operator signer.</p>",
           "UserEditable": true,
           "GoType": "",
           "OpenSourceOnly": false
@@ -403,8 +403,8 @@
           "Required": false,
           "OnParseFailure": "ReplaceWithDefault",
           "AllowedConfigSources": "LocalOnly",
-          "Description": "Path to the TLS private key to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.",
-          "DescriptionHTML": "<p>Path to the TLS private key to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified.</p>",
+          "Description": "Path to the TLS private key to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the private key is generated locally\nand rotated when the certificate expires.",
+          "DescriptionHTML": "<p>Path to the TLS private key to use when communicating with Typha. If this parameter is specified,\nthe other TLS parameters must also be specified. For non-cluster hosts, the private key is generated locally\nand rotated when the certificate expires.</p>",
           "UserEditable": true,
           "GoType": "",
           "OpenSourceOnly": false
