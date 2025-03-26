@@ -999,7 +999,7 @@ var _ = Describe("DNS Policy Mode: DelayDeniedPacket", func() {
 		udp := numorstring.ProtocolFromString(numorstring.ProtocolUDP)
 
 		policy = api.NewNetworkPolicy()
-		policy.Name = "allow-foobar"
+		policy.Name = "default.allow-foobar"
 		policy.Namespace = "default"
 		order := float64(20)
 		policy.Spec.Order = &order

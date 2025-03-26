@@ -709,6 +709,13 @@ func (d *policyData) IsKubernetesType() (bool, error) {
 	nameParts := strings.Split(d.GetResource().GetObjectMeta().GetName(), ".")
 
 	switch len(nameParts) {
+	case 1:
+		// calico policies in the default tier do not have to contain the default. prefix
+		switch d.GetResource().GetObjectKind().GroupVersionKind().Kind {
+		case apiv3.KindNetworkPolicy, apiv3.KindGlobalNetworkPolicy, apiv3.KindStagedNetworkPolicy, apiv3.KindStagedGlobalNetworkPolicy:
+			return true, nil
+		}
+		return false, nil
 	case 2:
 		return false, nil // calico policies' name consists of two parts: "tier.policyName"
 	case 3:

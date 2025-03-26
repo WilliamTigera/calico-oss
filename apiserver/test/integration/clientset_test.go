@@ -191,14 +191,14 @@ func testNetworkPolicyClient(client calicoclient.Interface, name string) error {
 		return fmt.Errorf("policies should not exist on start, had %v policies", len(policies.Items))
 	}
 
-	// Create a policy without the "default" prefix. It should be defaulted by the apiserver.
+	// Create a policy without the "default" prefix. It should be returned back without the prefix.
 	policy2 := &v3.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: name}}
 	policyServer, err := policyClient.Create(ctx, policy2, metav1.CreateOptions{})
 	if err != nil {
 		return fmt.Errorf("error creating the policy '%v' (%v)", policy2, err)
 	}
-	if defaultTierPolicyName != policyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on create: %v", policyServer)
+	if name != policyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on create: %v", policyServer)
 	}
 
 	// Update that policy. We should be able to use the same name that we used to create it (i.e., without the "default" prefix).
@@ -208,8 +208,8 @@ func testNetworkPolicyClient(client calicoclient.Interface, name string) error {
 	if err != nil {
 		return fmt.Errorf("error updating the policy '%v' (%v)", policyServer, err)
 	}
-	if defaultTierPolicyName != policyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on update: %v", policyServer)
+	if defaultTierPolicyName == policyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on update: %v", policyServer)
 	}
 
 	// Delete that policy. We should be able to use the same name that we used to create it (i.e., without the "default" prefix).
@@ -312,7 +312,7 @@ func testNetworkPolicyClient(client calicoclient.Interface, name string) error {
 		return fmt.Errorf("should have exactly two policies, had %v policies", len(policies.Items))
 	}
 
-	policyServer, err = policyClient.Get(ctx, name, metav1.GetOptions{})
+	policyServer, err = policyClient.Get(ctx, defaultTierPolicyName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error getting policy %s (%s)", name, err)
 	}
@@ -347,7 +347,7 @@ func testNetworkPolicyClient(client calicoclient.Interface, name string) error {
 		}
 	}()
 
-	err = policyClient.Delete(ctx, name, metav1.DeleteOptions{})
+	err = policyClient.Delete(ctx, defaultTierPolicyName, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("policy should be deleted (%s)", err)
 	}
@@ -409,8 +409,8 @@ func testStagedNetworkPolicyClient(client calicoclient.Interface, name string) e
 	if err != nil {
 		return fmt.Errorf("error creating the staged network policy '%v' (%v)", stagedNetworkPolicy2, err)
 	}
-	if defaultTierPolicyName != stagedNetworkPolicyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on create: %v", stagedNetworkPolicyServer)
+	if name != stagedNetworkPolicyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on create: %v", stagedNetworkPolicyServer)
 	}
 	stagedNetworkPolicyServer.Name = name
 	stagedNetworkPolicyServer.Labels = map[string]string{"foo": "bar"}
@@ -418,8 +418,8 @@ func testStagedNetworkPolicyClient(client calicoclient.Interface, name string) e
 	if err != nil {
 		return fmt.Errorf("error updating the policy '%v' (%v)", stagedNetworkPolicyServer, err)
 	}
-	if defaultTierPolicyName != stagedNetworkPolicyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on update: %v", stagedNetworkPolicyServer)
+	if name != stagedNetworkPolicyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on update: %v", stagedNetworkPolicyServer)
 	}
 	err = policyClient.Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
@@ -519,11 +519,11 @@ func testStagedNetworkPolicyClient(client calicoclient.Interface, name string) e
 		return fmt.Errorf("should have exactly two policies, had %v policies", len(policies.Items))
 	}
 
-	policyServer, err = policyClient.Get(ctx, name, metav1.GetOptions{})
+	policyServer, err = policyClient.Get(ctx, defaultTierPolicyName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error getting policy %s (%s)", name, err)
 	}
-	if name != policyServer.Name &&
+	if defaultTierPolicyName != policyServer.Name &&
 		policy.ResourceVersion == policyServer.ResourceVersion {
 		return fmt.Errorf("didn't get the same policy back from the server \n%+v\n%+v", policy, policyServer)
 	}
@@ -544,7 +544,7 @@ func testStagedNetworkPolicyClient(client calicoclient.Interface, name string) e
 		}
 	}()
 
-	err = policyClient.Delete(ctx, name, metav1.DeleteOptions{})
+	err = policyClient.Delete(ctx, defaultTierPolicyName, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("policy should be deleted (%s)", err)
 	}
@@ -875,8 +875,8 @@ func testGlobalNetworkPolicyClient(client calicoclient.Interface, name string) e
 	if err != nil {
 		return fmt.Errorf("error creating the globalNetworkPolicy '%v' (%v)", globalNetworkPolicy2, err)
 	}
-	if defaultTierPolicyName != globalNetworkPolicyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on create: %v", globalNetworkPolicyServer)
+	if defaultTierPolicyName == globalNetworkPolicyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on create: %v", globalNetworkPolicyServer)
 	}
 	globalNetworkPolicyServer.Name = name
 	globalNetworkPolicyServer.Labels = map[string]string{"foo": "bar"}
@@ -884,8 +884,8 @@ func testGlobalNetworkPolicyClient(client calicoclient.Interface, name string) e
 	if err != nil {
 		return fmt.Errorf("error updating the policy '%v' (%v)", globalNetworkPolicyServer, err)
 	}
-	if defaultTierPolicyName != globalNetworkPolicyServer.Name {
-		return fmt.Errorf("policy name prefix wasn't defaulted by the apiserver on update: %v", globalNetworkPolicyServer)
+	if defaultTierPolicyName == globalNetworkPolicyServer.Name {
+		return fmt.Errorf("policy name prefix was defaulted by the apiserver on update: %v", globalNetworkPolicyServer)
 	}
 	err = globalNetworkPolicyClient.Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
@@ -976,7 +976,7 @@ func testGlobalNetworkPolicyClient(client calicoclient.Interface, name string) e
 		return fmt.Errorf("should have exactly two policies, had %v policies", len(globalNetworkPolicies.Items))
 	}
 
-	globalNetworkPolicyServer, err = globalNetworkPolicyClient.Get(ctx, name, metav1.GetOptions{})
+	globalNetworkPolicyServer, err = globalNetworkPolicyClient.Get(ctx, defaultTierPolicyName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error getting globalNetworkPolicy %s (%s)", name, err)
 	}
@@ -985,7 +985,7 @@ func testGlobalNetworkPolicyClient(client calicoclient.Interface, name string) e
 		return fmt.Errorf("didn't get the same globalNetworkPolicy back from the server \n%+v\n%+v", globalNetworkPolicy, globalNetworkPolicyServer)
 	}
 
-	err = globalNetworkPolicyClient.Delete(ctx, name, metav1.DeleteOptions{})
+	err = globalNetworkPolicyClient.Delete(ctx, defaultTierPolicyName, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("globalNetworkPolicy should be deleted (%s)", err)
 	}
@@ -1020,9 +1020,9 @@ func TestStagedGlobalNetworkPolicyClient(t *testing.T) {
 
 func testStagedGlobalNetworkPolicyClient(client calicoclient.Interface, name string) error {
 	stagedGlobalNetworkPolicyClient := client.ProjectcalicoV3().StagedGlobalNetworkPolicies()
-	defaultTierPolicyName := "default" + "." + name
+	defaultTierPolicyName := name
 	stagedGlobalNetworkPolicy := &v3.StagedGlobalNetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{Name: defaultTierPolicyName},
+		ObjectMeta: metav1.ObjectMeta{Name: name},
 		Spec:       v3.StagedGlobalNetworkPolicySpec{StagedAction: "Set", Selector: "foo == \"bar\""},
 	}
 	ctx := context.Background()
@@ -1142,7 +1142,7 @@ func testStagedGlobalNetworkPolicyClient(client calicoclient.Interface, name str
 		return fmt.Errorf("should have exactly two policies, had %v policies", len(stagedGlobalNetworkPolicies.Items))
 	}
 
-	stagedGlobalNetworkPolicyServer, err = stagedGlobalNetworkPolicyClient.Get(ctx, name, metav1.GetOptions{})
+	stagedGlobalNetworkPolicyServer, err = stagedGlobalNetworkPolicyClient.Get(ctx, defaultTierPolicyName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error getting stagedGlobalNetworkPolicy %s (%s)", name, err)
 	}
@@ -1151,7 +1151,7 @@ func testStagedGlobalNetworkPolicyClient(client calicoclient.Interface, name str
 		return fmt.Errorf("didn't get the same stagedGlobalNetworkPolicy back from the server \n%+v\n%+v", stagedGlobalNetworkPolicy, stagedGlobalNetworkPolicyServer)
 	}
 
-	err = stagedGlobalNetworkPolicyClient.Delete(ctx, name, metav1.DeleteOptions{})
+	err = stagedGlobalNetworkPolicyClient.Delete(ctx, defaultTierPolicyName, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("stagedGlobalNetworkPolicy should be deleted (%s)", err)
 	}
