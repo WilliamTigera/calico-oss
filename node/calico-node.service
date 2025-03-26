@@ -7,7 +7,8 @@ After=network.target
 [Service]
 Type=notify
 EnvironmentFile=-/etc/calico/calico-node/calico-node.env
-ExecStart=/usr/bin/calico-node -felix
+ExecStartPre=/usr/bin/calico-noncluster-host-init
+ExecStart=/usr/bin/calico-node -felix -felix-config /etc/calico/calico-node/calico-node.conf -noncluster-host
 NotifyAccess=main
 Restart=always
 WatchdogSec=60 

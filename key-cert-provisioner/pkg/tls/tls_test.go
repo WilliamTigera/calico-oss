@@ -79,7 +79,7 @@ var _ = Describe("Certificate requests", func() {
 	Context("Create a certificate request based on a config", func() {
 		It("should include all required fields", func() {
 			config := cfg.Config{
-				IPAddress:           []net.IP{net.IPv4(1, 2, 3, 4)},
+				IPAddresses:         []net.IP{net.IPv4(1, 2, 3, 4)},
 				SignatureAlgorithm:  "SHA256WithRSA",
 				DNSNames:            []string{"localhost"},
 				CommonName:          "lh",

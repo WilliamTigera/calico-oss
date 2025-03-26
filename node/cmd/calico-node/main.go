@@ -55,6 +55,10 @@ var monitorAddrs = flagSet.Bool("monitor-addresses", false, "Monitor change in n
 var runAllocateTunnelAddrs = flagSet.Bool("allocate-tunnel-addrs", false, "Configure tunnel addresses for this node")
 var allocateTunnelAddrsRunOnce = flagSet.Bool("allocate-tunnel-addrs-run-once", false, "Run allocate-tunnel-addrs in oneshot mode")
 var monitorToken = flagSet.Bool("monitor-token", false, "Watch for Kubernetes token changes, update CNI config")
+var nonClusterHost = flagSet.Bool("noncluster-host", false, "Run in non-cluster host mode")
+
+// Felix flags
+var felixConfig = flagSet.String("felix-config", "/etc/calico/felix.cfg", "Path to the Felix config file")
 
 // Build set of supported flags for metrics.
 var runBGPMetrics = flagSet.Bool("bgp-metrics", false, "Run server for BGP Prometheus metrics endpoint")
@@ -132,7 +136,7 @@ func main() {
 		os.Exit(0)
 	} else if *runFelix {
 		logutils.ConfigureFormatter("felix")
-		felix.Run("/etc/calico/felix.cfg", buildinfo.GitVersion, buildinfo.BuildDate, buildinfo.GitRevision)
+		felix.Run(*felixConfig, buildinfo.GitVersion, buildinfo.BuildDate, buildinfo.GitRevision, *nonClusterHost)
 	} else if *runBPF {
 		// Command-line tools should log to stderr to avoid confusion with the output.
 		logrus.SetOutput(os.Stderr)

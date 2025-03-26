@@ -58,6 +58,7 @@ var _ = Describe("Test Certificates", func() {
 			CSR: csrPem,
 		}
 	})
+
 	Context("Test submitting a CSR", func() {
 		It("should list no CSRs when the suite starts", func() {
 			By("verifying no v1 CSRs are present yet")
@@ -95,6 +96,7 @@ var _ = Describe("Test writing TLS secrets to disk", func() {
 		keyName    = "tls.key"
 		caCertName = "ca.crt"
 	)
+
 	var (
 		dir     string
 		config  *cfg.Config

@@ -282,13 +282,16 @@ type Config struct {
 	TyphaWriteTimeout time.Duration `config:"seconds;10;local"`
 
 	// TyphaKeyFile path to the TLS private key to use when communicating with Typha.  If this parameter is specified,
-	// the other TLS parameters must also be specified.
+	// the other TLS parameters must also be specified.  For non-cluster hosts, the private key is generated locally
+	// and rotated when the certificate expires.
 	TyphaKeyFile string `config:"file(must-exist);;local"`
 	// TyphaCertFile path to the TLS certificate to use when communicating with Typha.  If this parameter is specified,
-	// the other TLS parameters must also be specified.
+	// the other TLS parameters must also be specified.  For non-cluster hosts, the certificate will be signed by the
+	// in-cluster Tigera operator signer.
 	TyphaCertFile string `config:"file(must-exist);;local"`
 	// TyphaCAFile path to the TLS CA file to use when communicating with Typha.  If this parameter is specified,
-	// the other TLS parameters must also be specified.
+	// the other TLS parameters must also be specified.  For non-cluster hosts, the CA file is extracted from the
+	// tigera-ca-bundle ConfigMap under the TyphaK8sNamespace namespace.
 	TyphaCAFile string `config:"file(must-exist);;local"`
 	// TyphaCN Common name to use when authenticating to Typha over TLS. If any TLS parameters are specified then one of
 	// TyphaCN and TyphaURISAN must be set.

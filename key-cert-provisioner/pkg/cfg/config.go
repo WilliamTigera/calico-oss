@@ -33,7 +33,7 @@ type Config struct {
 	Signer              string
 	CommonName          string
 	EmailAddress        string
-	IPAddress           []net.IP
+	IPAddresses         []net.IP
 	KeyPath             string
 	CertPath            string
 	CACertPath          string
@@ -102,7 +102,7 @@ func GetConfigOrDie() *Config {
 		CertPath:            filepath.Join(dir, GetEnvOrDie("CERT_NAME")),
 		CACertPath:          filepath.Join(dir, caCertName),
 		CACertPEM:           caCert,
-		IPAddress:           []net.IP{net.ParseIP(GetEnvOrDie("POD_IP"))},
+		IPAddresses:         []net.IP{net.ParseIP(GetEnvOrDie("POD_IP"))},
 		AppName:             GetEnvOrDie("APP_NAME"),
 		PrivateKeyAlgorithm: os.Getenv("KEY_ALGORITHM"),
 		DNSNames:            dnsNames,

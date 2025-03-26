@@ -156,7 +156,8 @@ If set, tells Felix to connect to Typha at the given address and port. Overrides
 ### `TyphaCAFile` (config file / env var only)
 
 Path to the TLS CA file to use when communicating with Typha. If this parameter is specified,
-the other TLS parameters must also be specified.
+the other TLS parameters must also be specified. For non-cluster hosts, the CA file is extracted from the
+tigera-ca-bundle ConfigMap under the TyphaK8sNamespace namespace.
 
 | Detail |   |
 | --- | --- |
@@ -180,7 +181,8 @@ TyphaCN and TyphaURISAN must be set.
 ### `TyphaCertFile` (config file / env var only)
 
 Path to the TLS certificate to use when communicating with Typha. If this parameter is specified,
-the other TLS parameters must also be specified.
+the other TLS parameters must also be specified. For non-cluster hosts, the certificate will be signed by the
+in-cluster Tigera operator signer.
 
 | Detail |   |
 | --- | --- |
@@ -215,7 +217,8 @@ Service in namespace specified by TyphaK8sNamespace.
 ### `TyphaKeyFile` (config file / env var only)
 
 Path to the TLS private key to use when communicating with Typha. If this parameter is specified,
-the other TLS parameters must also be specified.
+the other TLS parameters must also be specified. For non-cluster hosts, the private key is generated locally
+and rotated when the certificate expires.
 
 | Detail |   |
 | --- | --- |
