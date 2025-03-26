@@ -37,12 +37,12 @@ var _ = Describe("Host ip manager", func() {
 	Describe("after sending a route update", func() {
 		BeforeEach(func() {
 			hostIPMgr.OnUpdate(&proto.RouteUpdate{
-				Type: proto.RouteType_REMOTE_TUNNEL,
-				Dst:  "192.0.0.1/32",
+				Types: proto.RouteType_REMOTE_TUNNEL,
+				Dst:   "192.0.0.1/32",
 			})
 			hostIPMgr.OnUpdate(&proto.RouteUpdate{
-				Type: proto.RouteType_REMOTE_TUNNEL,
-				Dst:  "192.0.0.2/32",
+				Types: proto.RouteType_REMOTE_TUNNEL,
+				Dst:   "192.0.0.2/32",
 			})
 			err := hostIPMgr.CompleteDeferredWork()
 			Expect(err).ToNot(HaveOccurred())
@@ -58,8 +58,8 @@ var _ = Describe("Host ip manager", func() {
 		Describe("after sending a route update with same CIDR but different type", func() {
 			BeforeEach(func() {
 				hostIPMgr.OnUpdate(&proto.RouteUpdate{
-					Type: proto.RouteType_REMOTE_WORKLOAD,
-					Dst:  "192.0.0.1/32",
+					Types: proto.RouteType_REMOTE_WORKLOAD,
+					Dst:   "192.0.0.1/32",
 				})
 				err := hostIPMgr.CompleteDeferredWork()
 				Expect(err).ToNot(HaveOccurred())

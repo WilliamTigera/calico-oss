@@ -115,7 +115,7 @@ func newRouteUpdate(workloadCIDR, nodeIP, nodeName string, t proto.RouteType) *p
 	tdp := &proto.ToDataplane{}
 	tdru := &proto.ToDataplane_RouteUpdate{}
 	ru := proto.RouteUpdate{
-		Type:          t,
+		Types:         t,
 		IpPoolType:    proto.IPPoolType_NO_ENCAP,
 		Dst:           workloadCIDR,
 		DstNodeName:   nodeName,

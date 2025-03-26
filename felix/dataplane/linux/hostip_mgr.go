@@ -126,7 +126,7 @@ func (m *hostIPManager) onRouteUpdate(update *proto.RouteUpdate) {
 
 	m.deleteRoute(cidr)
 
-	if update.Type == proto.RouteType_REMOTE_TUNNEL {
+	if isType(update, proto.RouteType_REMOTE_TUNNEL) {
 		m.routesByDest.Add(cidr)
 		m.routesDirty = true
 	}

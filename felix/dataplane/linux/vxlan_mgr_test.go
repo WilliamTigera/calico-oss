@@ -219,7 +219,7 @@ var _ = Describe("VXLANManager", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "172.0.0.1/26",
 			DstNodeName: "node2",
@@ -228,7 +228,7 @@ var _ = Describe("VXLANManager", func() {
 		})
 
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "172.0.0.2/26",
 			DstNodeName: "node2",
@@ -236,7 +236,7 @@ var _ = Describe("VXLANManager", func() {
 		})
 
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_WORKLOAD,
+			Types:       proto.RouteType_LOCAL_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "172.0.0.0/26",
 			DstNodeName: "node0",
@@ -246,7 +246,7 @@ var _ = Describe("VXLANManager", func() {
 
 		// Borrowed /32 should not be programmed as blackhole.
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_WORKLOAD,
+			Types:       proto.RouteType_LOCAL_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "172.0.0.1/32",
 			DstNodeName: "node1",
@@ -307,7 +307,7 @@ var _ = Describe("VXLANManager", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::1/112",
 			DstNodeName: "node2",
@@ -316,7 +316,7 @@ var _ = Describe("VXLANManager", func() {
 		})
 
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::2/112",
 			DstNodeName: "node2",
@@ -324,7 +324,7 @@ var _ = Describe("VXLANManager", func() {
 		})
 
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_WORKLOAD,
+			Types:       proto.RouteType_LOCAL_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::/112",
 			DstNodeName: "node0",
@@ -334,7 +334,7 @@ var _ = Describe("VXLANManager", func() {
 
 		// Borrowed /128 should not be programmed as blackhole.
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_WORKLOAD,
+			Types:       proto.RouteType_LOCAL_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::1/128",
 			DstNodeName: "node1",
@@ -379,7 +379,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "172.0.0.1/26",
 			DstNodeName: "node2",
@@ -435,7 +435,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIpv6: "fc00:10:10::1",
 		})
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_WORKLOAD,
+			Types:       proto.RouteType_REMOTE_WORKLOAD,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::1/112",
 			DstNodeName: "node2",
@@ -476,7 +476,7 @@ var _ = Describe("VXLANManager", func() {
 	It("should program directly connected routes for remote VTEPs with borrowed IP addresses", func() {
 		By("Sending a borrowed tunnel IP address")
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.1.1/32",
 			DstNodeName: "node2",
@@ -506,7 +506,7 @@ var _ = Describe("VXLANManager", func() {
 	It("IPv6: should program directly connected routes for remote VTEPs with borrowed IP addresses", func() {
 		By("Sending a borrowed tunnel IP address")
 		managerV6.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "fc00:10:244::1/112",
 			DstNodeName: "node2",
@@ -547,7 +547,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -555,7 +555,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.80.0/32",
 			DstNodeName: "remote-cluster/node2",
@@ -592,7 +592,7 @@ var _ = Describe("VXLANManager", func() {
 		})
 		// Omit the remote cluster route update, as the Calc Graph will resolve the IP conflict and send the winning L3 route accordingly.
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -643,7 +643,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -651,7 +651,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "node3",
@@ -694,7 +694,7 @@ var _ = Describe("VXLANManager", func() {
 
 		// Assume remote-cluster-a is the winner, so only send a route update for remote-cluster-a.
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -702,7 +702,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster-a/node2",
@@ -744,7 +744,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		}
 		thisNodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -752,7 +752,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		}
 		localNodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "node3",
@@ -760,7 +760,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		}
 		remoteNodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster/node2",
@@ -832,7 +832,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.2",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -846,7 +846,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.80.0/32",
 			DstNodeName: "remote-cluster/node1",
@@ -868,7 +868,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.2",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -882,7 +882,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.3",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "node3",
@@ -896,7 +896,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.3/32",
 			DstNodeName: "remote-cluster/node3",
@@ -927,7 +927,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.2",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -941,7 +941,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.3",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster-a/node3",
@@ -955,7 +955,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.3/32",
 			DstNodeName: "remote-cluster-b/node3",
@@ -985,7 +985,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.2",
 		}
 		thisNodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -999,7 +999,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.0.3",
 		}
 		remoteANodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster-a/node3",
@@ -1013,7 +1013,7 @@ var _ = Describe("VXLANManager", func() {
 			ParentDeviceIp: "172.0.12.1",
 		}
 		remoteBNodeVTEPRoute := &proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.3/32",
 			DstNodeName: "remote-cluster-b/node3",
@@ -1088,7 +1088,7 @@ var _ = Describe("VXLANManager", func() {
 
 		// We expect only one remote cluster tunnel route to be present, as the Calc Graph should assign a winner.
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -1096,7 +1096,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster-a/node2",
@@ -1148,7 +1148,7 @@ var _ = Describe("VXLANManager", func() {
 
 		// We expect that the Calc Graph will assign B as the winner of the IP conflict.
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_LOCAL_TUNNEL,
+			Types:       proto.RouteType_LOCAL_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.0/32",
 			DstNodeName: "node1",
@@ -1156,7 +1156,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.1/32",
 			DstNodeName: "remote-cluster-a/node2",
@@ -1164,7 +1164,7 @@ var _ = Describe("VXLANManager", func() {
 			TunnelType:  &proto.TunnelType{Vxlan: true},
 		})
 		manager.OnUpdate(&proto.RouteUpdate{
-			Type:        proto.RouteType_REMOTE_TUNNEL,
+			Types:       proto.RouteType_REMOTE_TUNNEL,
 			IpPoolType:  proto.IPPoolType_VXLAN,
 			Dst:         "10.0.0.2/32",
 			DstNodeName: "remote-cluster-b/node3",

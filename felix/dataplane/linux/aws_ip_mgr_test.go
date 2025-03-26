@@ -159,7 +159,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				},
 			})
 			m.OnUpdate(&proto.RouteUpdate{
-				Type:        proto.RouteType_CIDR_INFO,
+				Types:       proto.RouteType_CIDR_INFO,
 				IpPoolType:  proto.IPPoolType_IPIP,
 				Dst:         "192.168.0.0/16",
 				NatOutgoing: true,
@@ -173,7 +173,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				},
 			})
 			m.OnUpdate(&proto.RouteUpdate{
-				Type:          proto.RouteType_CIDR_INFO,
+				Types:         proto.RouteType_CIDR_INFO,
 				IpPoolType:    proto.IPPoolType_NO_ENCAP,
 				Dst:           "100.64.1.0/24",
 				NatOutgoing:   false,
@@ -189,7 +189,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				},
 			})
 			m.OnUpdate(&proto.RouteUpdate{
-				Type:          proto.RouteType_CIDR_INFO,
+				Types:         proto.RouteType_CIDR_INFO,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           "100.64.2.0/24",
 				NatOutgoing:   false,
@@ -199,7 +199,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 
 			// Local AWS workload.
 			workloadRoute = &proto.RouteUpdate{
-				Type:          proto.RouteType_LOCAL_WORKLOAD,
+				Types:         proto.RouteType_LOCAL_WORKLOAD,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           egressGWCIDR,
 				NatOutgoing:   false,
@@ -218,7 +218,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 
 			// Local non-AWS workload (should be ignored).
 			nonAWSWorkloadRoute := &proto.RouteUpdate{
-				Type:          proto.RouteType_LOCAL_WORKLOAD,
+				Types:         proto.RouteType_LOCAL_WORKLOAD,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           "192.168.1.2/32",
 				NatOutgoing:   true,
@@ -385,7 +385,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				},
 			})
 			m.OnUpdate(&proto.RouteUpdate{
-				Type:          proto.RouteType_CIDR_INFO,
+				Types:         proto.RouteType_CIDR_INFO,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           "100.64.2.0/24",
 				NatOutgoing:   false,
@@ -393,7 +393,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				AwsSubnetId:   "subnet-000002",
 			})
 			workloadRoute = &proto.RouteUpdate{
-				Type:          proto.RouteType_LOCAL_WORKLOAD,
+				Types:         proto.RouteType_LOCAL_WORKLOAD,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           egressGWCIDR,
 				NatOutgoing:   false,
@@ -428,7 +428,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				Dst: "100.64.2.0/24",
 			})
 			workloadRoute = &proto.RouteUpdate{
-				Type:          proto.RouteType_LOCAL_WORKLOAD,
+				Types:         proto.RouteType_LOCAL_WORKLOAD,
 				IpPoolType:    proto.IPPoolType_VXLAN,
 				Dst:           egressGWCIDR,
 				NatOutgoing:   false,
@@ -857,7 +857,7 @@ func describeAWSIPMgrCommonTests(mode string) {
 				BeforeEach(func() {
 					// Extra route.
 					extraWorkloadRoute = &proto.RouteUpdate{
-						Type:          proto.RouteType_LOCAL_WORKLOAD,
+						Types:         proto.RouteType_LOCAL_WORKLOAD,
 						IpPoolType:    proto.IPPoolType_VXLAN,
 						Dst:           egressGW2CIDR,
 						NatOutgoing:   false,
