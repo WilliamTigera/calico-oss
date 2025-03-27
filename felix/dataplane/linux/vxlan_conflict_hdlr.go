@@ -118,7 +118,7 @@ func (m *VXLANConflictHandler) getVTEPIPForNode(node string) (string, error) {
 }
 
 func (m *VXLANConflictHandler) handleRouteUpdate(msg *proto.RouteUpdate) bool {
-	if (msg.Type == proto.RouteType_LOCAL_TUNNEL || msg.Type == proto.RouteType_REMOTE_TUNNEL) && msg.IpPoolType == proto.IPPoolType_VXLAN {
+	if (isType(msg, proto.RouteType_LOCAL_TUNNEL) || isType(msg, proto.RouteType_REMOTE_TUNNEL)) && msg.IpPoolType == proto.IPPoolType_VXLAN {
 		m.logCtx.WithField("msg", msg).Debug("Handling VTEP route update")
 		m.vtepRoutesByDest[msg.Dst] = msg
 		return true

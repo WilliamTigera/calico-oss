@@ -149,20 +149,18 @@ func (s *routeStore) SyncForever(ctx context.Context) {
 				switch payload := update.Payload.(type) {
 				case *proto.ToDataplane_RouteUpdate:
 					ru := payload.RouteUpdate
-					if ru.Type == proto.RouteType_REMOTE_WORKLOAD {
-						log.Debugf("received RouteUpdate for a remote workload: %+v", ru)
+					if protoutil.IsHostTunnel(ru) {
+						log.Debugf("received RouteUpdate for host tunnel: %+v", ru)
 						s.write(func(rs *routeStore) {
-							rs.remoteWorkloadUpdatesByDst[ru.Dst] = ru
-							s.maybeNotifyResync()
+							rs.tunnelUpdatesByDst[ru.Dst] = ru
 						})
-
-					} else if ru.Type == proto.RouteType_LOCAL_WORKLOAD {
+						s.maybeNotifyResync()
+					} else if protoutil.IsRouteType(ru, proto.RouteType_LOCAL_WORKLOAD) {
 						// we only care about local workloads describing this gateway, check if that's what we have
 						_, dstCIDR, err := net.ParseCIDR(ru.Dst)
 						if err != nil {
 							log.WithError(err).Warnf("could not parse dst CIDR of RouteUpdate: %+v", ru)
 							continue
-
 						} else {
 							if dstCIDR.Contains(s.gatewayIP) {
 								log.Debugf("received RouteUpdate describing this gateway: %+v", ru)
@@ -172,13 +170,12 @@ func (s *routeStore) SyncForever(ctx context.Context) {
 								s.maybeNotifyResync()
 							}
 						}
-
-					} else if protoutil.IsHostTunnel(ru) {
-						log.Debugf("received RouteUpdate for host tunnel: %+v", ru)
+					} else if protoutil.IsRouteType(ru, proto.RouteType_REMOTE_WORKLOAD) {
+						log.Debugf("received RouteUpdate for a remote workload: %+v", ru)
 						s.write(func(rs *routeStore) {
-							rs.tunnelUpdatesByDst[ru.Dst] = ru
+							rs.remoteWorkloadUpdatesByDst[ru.Dst] = ru
+							s.maybeNotifyResync()
 						})
-						s.maybeNotifyResync()
 					}
 
 				case *proto.ToDataplane_RouteRemove:

@@ -34,14 +34,14 @@ func TestProgramsKernel(test *testing.T) {
 	log.Info("creating mock route store...")
 	routesByWorkloadCIDR := make(map[string]*proto.RouteUpdate)
 	routesByWorkloadCIDR["10.0.1.0/24"] = &proto.RouteUpdate{
-		Type:        proto.RouteType_REMOTE_WORKLOAD,
+		Types:       proto.RouteType_REMOTE_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.1.0/24",
 		DstNodeName: "example.foo",
 		DstNodeIp:   "192.168.1.1",
 	}
 	gatewayUpdate := proto.RouteUpdate{
-		Type:        proto.RouteType_LOCAL_WORKLOAD,
+		Types:       proto.RouteType_LOCAL_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.2.0/31",
 		DstNodeName: "example.local",
@@ -85,7 +85,7 @@ func TestProgramsKernel(test *testing.T) {
 	// delete a route and add a new one
 	delete(store.WorkloadsByDst, "10.0.1.0/24")
 	store.WorkloadsByDst["10.0.2.0/24"] = &proto.RouteUpdate{
-		Type:        proto.RouteType_REMOTE_WORKLOAD,
+		Types:       proto.RouteType_REMOTE_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.2.0/24",
 		DstNodeName: "example.foo",
@@ -129,14 +129,14 @@ func TestHandlesFailures(test *testing.T) {
 	log.Info("creating mock route store...")
 	routesByWorkloadCIDR := make(map[string]*proto.RouteUpdate)
 	routesByWorkloadCIDR["10.0.1.0/24"] = &proto.RouteUpdate{
-		Type:        proto.RouteType_REMOTE_WORKLOAD,
+		Types:       proto.RouteType_REMOTE_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.1.0/24",
 		DstNodeName: "example.foo",
 		DstNodeIp:   "192.168.1.1",
 	}
 	gatewayUpdate := proto.RouteUpdate{
-		Type:        proto.RouteType_LOCAL_WORKLOAD,
+		Types:       proto.RouteType_LOCAL_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.2.0/31",
 		DstNodeName: "example.local",
@@ -196,7 +196,7 @@ func TestHandlesTunnels(test *testing.T) {
 	routesByWorkloadCIDR := make(map[string]*proto.RouteUpdate)
 	tunnelsByDst := make(map[string]*proto.RouteUpdate)
 	routesByWorkloadCIDR["10.0.1.0/24"] = &proto.RouteUpdate{
-		Type:        proto.RouteType_REMOTE_WORKLOAD,
+		Types:       proto.RouteType_REMOTE_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.1.0/24",
 		DstNodeName: "example.foo",
@@ -204,7 +204,7 @@ func TestHandlesTunnels(test *testing.T) {
 	}
 	// add in a wireguard-ish tunnel update with an overlapping Dst CIDR
 	tunnelsByDst["10.0.1.23/32"] = &proto.RouteUpdate{
-		Type: proto.RouteType_REMOTE_TUNNEL,
+		Types: proto.RouteType_REMOTE_TUNNEL,
 		TunnelType: &proto.TunnelType{
 			Wireguard: true,
 		},
@@ -215,7 +215,7 @@ func TestHandlesTunnels(test *testing.T) {
 	}
 	// also add a wireguard tunnel on the "gateway's host" so it thinks the node's are peered
 	tunnelsByDst["10.0.3.1/32"] = &proto.RouteUpdate{
-		Type: proto.RouteType_LOCAL_TUNNEL,
+		Types: proto.RouteType_LOCAL_TUNNEL,
 		TunnelType: &proto.TunnelType{
 			Wireguard: true,
 		},
@@ -225,7 +225,7 @@ func TestHandlesTunnels(test *testing.T) {
 		DstNodeIp:   "192.168.2.2",
 	}
 	gatewayUpdate := proto.RouteUpdate{
-		Type:        proto.RouteType_LOCAL_WORKLOAD,
+		Types:       proto.RouteType_LOCAL_WORKLOAD,
 		IpPoolType:  proto.IPPoolType_NO_ENCAP,
 		Dst:         "10.0.2.0/31",
 		DstNodeName: "example.local",

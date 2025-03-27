@@ -945,7 +945,7 @@ var _ = infrastructure.DatastoreDescribe("_POL-SYNC_ _BPF-SAFE_ route sync API t
 
 								updates := make([]types.RouteUpdate, 0)
 								updates = append(updates, types.RouteUpdate{
-									Type:          proto.RouteType_LOCAL_WORKLOAD,
+									Types:         proto.RouteType_LOCAL_WORKLOAD,
 									IpPoolType:    proto.IPPoolType_IPIP,
 									Dst:           ipToCIDR(wl.IP),
 									DstNodeName:   tc.Felixes[felixIdx].Hostname,
@@ -1117,7 +1117,7 @@ func calcRouteUpdates(localIndex int, felixes []*infrastructure.Felix, workloads
 		}
 
 		updates = append(updates, types.RouteUpdate{
-			Type:        hostType,
+			Types:       hostType,
 			IpPoolType:  proto.IPPoolType_NONE,
 			Dst:         ipToCIDR(f.IP),
 			DstNodeName: f.Hostname,
@@ -1135,7 +1135,7 @@ func calcRouteUpdates(localIndex int, felixes []*infrastructure.Felix, workloads
 			workloadType = proto.RouteType_REMOTE_WORKLOAD
 		}
 		updates = append(updates, types.RouteUpdate{
-			Type:          workloadType,
+			Types:         workloadType,
 			IpPoolType:    proto.IPPoolType_IPIP,
 			Dst:           ipToCIDR(wl.IP),
 			DstNodeName:   f.Hostname,

@@ -92,7 +92,7 @@ var _ = Describe("Processor", func() {
 		}
 		updateRoute = func(dst, dstNodeName, dstNodeIp string) {
 			updates <- &proto.RouteUpdate{
-				Type:        proto.RouteType_REMOTE_WORKLOAD,
+				Types:       proto.RouteType_REMOTE_WORKLOAD,
 				IpPoolType:  proto.IPPoolType_NONE,
 				Dst:         dst,
 				DstNodeName: dstNodeName,
@@ -1510,21 +1510,21 @@ var _ = Describe("Processor", func() {
 					It("should get 3 updates", func() {
 						expectedRouteUpdates := []*proto.RouteUpdate{
 							{
-								Type:        proto.RouteType_REMOTE_WORKLOAD,
+								Types:       proto.RouteType_REMOTE_WORKLOAD,
 								IpPoolType:  proto.IPPoolType_NONE,
 								Dst:         "172.0.2.1/32",
 								DstNodeName: "node1",
 								DstNodeIp:   "172.0.1.1",
 							},
 							{
-								Type:        proto.RouteType_REMOTE_WORKLOAD,
+								Types:       proto.RouteType_REMOTE_WORKLOAD,
 								IpPoolType:  proto.IPPoolType_NONE,
 								Dst:         "172.0.2.2/32",
 								DstNodeName: "node2",
 								DstNodeIp:   "172.0.1.2",
 							},
 							{
-								Type:        proto.RouteType_REMOTE_WORKLOAD,
+								Types:       proto.RouteType_REMOTE_WORKLOAD,
 								IpPoolType:  proto.IPPoolType_NONE,
 								Dst:         "172.0.2.3/32",
 								DstNodeName: "node3",
@@ -1548,7 +1548,7 @@ var _ = Describe("Processor", func() {
 						updateRoute("172.0.2.4/32", "node4", "172.0.1.4")
 						msg := <-output
 						expectedRouteUpdate := &proto.RouteUpdate{
-							Type:        proto.RouteType_REMOTE_WORKLOAD,
+							Types:       proto.RouteType_REMOTE_WORKLOAD,
 							IpPoolType:  proto.IPPoolType_NONE,
 							Dst:         "172.0.2.4/32",
 							DstNodeName: "node4",

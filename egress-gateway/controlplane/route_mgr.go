@@ -193,6 +193,7 @@ func (m *RouteManager) Start(ctx context.Context) {
 				inSync = false
 				break
 			}
+
 			activeTunnelsByNodeName := calculateActiveTunnelsForNodes(
 				thisWorkload,
 				workloadsByNodeName,
