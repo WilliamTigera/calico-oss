@@ -106,6 +106,9 @@ rm -rvf %{buildroot}%{_includedir}
 %exclude /usr/lib64/libluajit.a
 
 %changelog
+* Thu Mar 27 2025 Jiawei Huang <jiawei@tigera.io> - 3.2.10-1
+- Update version to 3.2.10
+
 * Tue Mar 13 2025 Jiawei Huang <jiawei@tigera.io> - 3.2.8-1
 - Update version to 3.2.8
 
