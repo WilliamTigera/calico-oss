@@ -142,7 +142,7 @@ func setupAndTeardown(t *testing.T) func() {
 
 	// Set up context with a timeout.
 	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Minute)
 
 	// Get the current working directory, which we expect to by the fv dir.
 	var err error

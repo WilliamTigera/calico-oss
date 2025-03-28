@@ -11,6 +11,7 @@ import (
 type Operator[T any] interface {
 	Write(ctx context.Context, items []T) (*v1.BulkResponse, error)
 	Read(ctx context.Context, current TimeInterval, pageSize int) (*v1.List[T], *TimeInterval, error)
+	Transform(items []T) []string
 }
 
 // TimeInterval represents how a read query is defined.
@@ -29,8 +30,11 @@ type TimeInterval struct {
 	// to store point in time to be used in the next query.
 	Cursor map[string]interface{}
 	// Start represents the value for generated_time to be used
-	// in the read query.
+	// in the read query as the left side of the interval.
 	Start *time.Time
+	// End represents the value for generated_time to be used
+	// in the read query as the right side of the interval.
+	End *time.Time
 }
 
 // HasReachedEnd will return true if we finished pagination through data

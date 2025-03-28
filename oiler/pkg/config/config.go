@@ -15,9 +15,9 @@ import (
 
 const (
 	// EnvConfigPrefix represents the prefix used to load ENV variables required for startup
-	EnvConfigPrefix  = "OILER"
-	OilerCompareMode = "compare"
-	OilerMigrateMode = "migrate"
+	EnvConfigPrefix   = "OILER"
+	OilerValidateMode = "validate"
+	OilerMigrateMode  = "migrate"
 )
 
 type OilerMode string

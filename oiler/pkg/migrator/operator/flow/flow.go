@@ -12,15 +12,16 @@ import (
 )
 
 type Operator struct {
-	backend     bapi.FlowLogBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.FlowLogBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f Operator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.FlowLog], *operator.TimeInterval, error) {
 	flowLogParams := v1.FlowLogParams{
-		QueryParams: operator.QueryParams(pageSize, current),
+		QueryParams: operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
 		QuerySortParams: v1.QuerySortParams{
-			Sort: operator.SortParameters(),
+			Sort: operator.SortParameters(f.queryByGeneratedTime),
 		},
 	}
 
@@ -46,9 +47,18 @@ func (f Operator) Write(ctx context.Context, items []v1.FlowLog) (*v1.BulkRespon
 	return f.backend.Create(ctx, f.clusterInfo, items)
 }
 
-func NewOperator(backend bapi.FlowLogBackend, clusterInfo bapi.ClusterInfo) Operator {
+func (f Operator) Transform(items []v1.FlowLog) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewOperator(backend bapi.FlowLogBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) Operator {
 	return Operator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }

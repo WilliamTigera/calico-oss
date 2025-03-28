@@ -15,6 +15,7 @@ func init() {
 	prometheus.MustRegister(LastReadGeneratedTimestamp)
 	prometheus.MustRegister(LastWrittenGeneratedTimestamp)
 	prometheus.MustRegister(WaitForData)
+	prometheus.MustRegister(MissingDocs)
 }
 
 const (
@@ -22,6 +23,7 @@ const (
 	LabelTenantID  = "tenant_id"
 	JobName        = "job_name"
 	Source         = "source"
+	IntervalBehind = "interval_behind"
 )
 
 var (
@@ -78,6 +80,13 @@ var (
 		Name:      "wait_for_data",
 		Help:      "How much we are waiting for data.",
 	}, []string{JobName, LabelClusterID})
+
+	MissingDocs = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "tigera",
+		Subsystem: "oiler",
+		Name:      "missing_docs_count",
+		Help:      "How many documents are missing from primary/secondary.",
+	}, []string{JobName, LabelClusterID, Source, IntervalBehind})
 
 	ReadDurationPerClusterIDAndTenantID = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "tigera",

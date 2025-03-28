@@ -12,14 +12,15 @@ import (
 )
 
 type BenchmarksOperator struct {
-	backend     bapi.BenchmarksBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.BenchmarksBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f BenchmarksOperator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.Benchmarks], *operator.TimeInterval, error) {
 	logParams := v1.BenchmarksParams{
-		QueryParams: operator.QueryParams(pageSize, current),
-		Sort:        operator.SortParameters(),
+		QueryParams: operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
+		Sort:        operator.SortParameters(f.queryByGeneratedTime),
 	}
 
 	list, err := f.backend.List(ctx, f.clusterInfo, &logParams)
@@ -44,9 +45,18 @@ func (f BenchmarksOperator) Write(ctx context.Context, items []v1.Benchmarks) (*
 	return f.backend.Create(ctx, f.clusterInfo, items)
 }
 
-func NewBenchmarksOperator(backend bapi.BenchmarksBackend, clusterInfo bapi.ClusterInfo) BenchmarksOperator {
+func (f BenchmarksOperator) Transform(items []v1.Benchmarks) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewBenchmarksOperator(backend bapi.BenchmarksBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) BenchmarksOperator {
 	return BenchmarksOperator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }

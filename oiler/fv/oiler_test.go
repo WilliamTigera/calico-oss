@@ -6,6 +6,7 @@ package fv
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -80,7 +81,7 @@ func TestRunOiler(t *testing.T) {
 		for idx := range spec.clusters {
 			err := backendutils.RefreshIndex(ctx, esClient, spec.idx.Index(secondaries[idx]))
 			require.NoError(t, err)
-			validateMigratedData(t, primaries[idx], secondaries[idx], catalogue, spec.dataType)
+			validateMigratedData(t, primaries[idx], secondaries[idx], catalogue, spec.dataType, 30*time.Second, 1*time.Second)
 
 			last := lastGeneratedTimeFromPrimary(t, catalogue, spec.dataType, primaries[idx])
 			validateMetrics(t, jobName, primaries[idx], secondaries[idx], int64(numLogs), last.UnixMilli(), spec.metricsPort)
@@ -135,7 +136,7 @@ func TestRunOiler(t *testing.T) {
 		for idx := range spec.clusters {
 			err := backendutils.RefreshIndex(ctx, esClient, spec.idx.Index(secondaries[idx]))
 			require.NoError(t, err)
-			validateMigratedData(t, primaries[idx], secondaries[idx], catalogue, spec.dataType)
+			validateMigratedData(t, primaries[idx], secondaries[idx], catalogue, spec.dataType, 90*time.Second, 1*time.Second)
 
 			last := lastGeneratedTimeFromPrimary(t, catalogue, spec.dataType, primaries[idx])
 			validateMetrics(t, jobName, primaries[idx], secondaries[idx], int64(numLogs), last.UnixMilli(), spec.metricsPort)

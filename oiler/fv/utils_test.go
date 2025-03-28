@@ -475,38 +475,38 @@ func queryParams() v1.QueryParams {
 	}
 }
 
-func validateMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, dataType api.DataType) {
+func validateMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, dataType api.DataType, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	switch dataType {
 	case api.FlowLogs:
-		validateFlowMigratedData(t, primary, secondary, catalogue)
+		validateFlowMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.AuditEELogs:
-		validateAuditMigratedData(t, primary, secondary, catalogue, v1.AuditLogTypeEE)
+		validateAuditMigratedData(t, primary, secondary, catalogue, v1.AuditLogTypeEE, waitFor, tick)
 	case api.AuditKubeLogs:
-		validateAuditMigratedData(t, primary, secondary, catalogue, v1.AuditLogTypeKube)
+		validateAuditMigratedData(t, primary, secondary, catalogue, v1.AuditLogTypeKube, waitFor, tick)
 	case api.BGPLogs:
-		validateBGPMigratedData(t, primary, secondary, catalogue)
+		validateBGPMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.DNSLogs:
-		validateDNSMigratedData(t, primary, secondary, catalogue)
+		validateDNSMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.Benchmarks:
-		validateBenchmarksMigratedData(t, primary, secondary, catalogue)
+		validateBenchmarksMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.ReportData:
-		validateComplianceReportsMigratedData(t, primary, secondary, catalogue)
+		validateComplianceReportsMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.Snapshots:
-		validateSnapshotsMigratedData(t, primary, secondary, catalogue)
+		validateSnapshotsMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.Events:
-		validateEventsMigratedData(t, primary, secondary, catalogue)
+		validateEventsMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.L7Logs:
-		validateL7MigratedData(t, primary, secondary, catalogue)
+		validateL7MigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.WAFLogs:
-		validateWAFMigratedData(t, primary, secondary, catalogue)
+		validateWAFMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.RuntimeReports:
-		validateRuntimeMigratedData(t, primary, secondary, catalogue)
+		validateRuntimeMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.IPSet:
-		validateIPSetMigratedData(t, primary, secondary, catalogue)
+		validateIPSetMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 	case api.DomainNameSet:
-		validateDomainSetMigratedData(t, primary, secondary, catalogue)
+		validateDomainSetMigratedData(t, primary, secondary, catalogue, waitFor, tick)
 
 	default:
 		t.Fatalf("unknown data type %v", dataType)
@@ -514,7 +514,7 @@ func validateMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.C
 
 }
 
-func validateAuditMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, auditType v1.AuditLogType) {
+func validateAuditMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, auditType v1.AuditLogType, waitFor time.Duration, tick time.Duration) {
 	require.Eventually(t, func() bool {
 		t.Helper()
 
@@ -531,10 +531,10 @@ func validateAuditMigratedData(t *testing.T, primary api.ClusterInfo, secondary 
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateFlowMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateFlowMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -551,10 +551,10 @@ func validateFlowMigratedData(t *testing.T, primary api.ClusterInfo, secondary a
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateBGPMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateBGPMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -571,7 +571,7 @@ func validateBGPMigratedData(t *testing.T, primary api.ClusterInfo, secondary ap
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
 func sinceStartOfTime() v1.QueryParams {
@@ -583,7 +583,7 @@ func sinceStartOfTime() v1.QueryParams {
 	}}
 }
 
-func validateDNSMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateDNSMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -600,10 +600,10 @@ func validateDNSMigratedData(t *testing.T, primary api.ClusterInfo, secondary ap
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateBenchmarksMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateBenchmarksMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -620,10 +620,10 @@ func validateBenchmarksMigratedData(t *testing.T, primary api.ClusterInfo, secon
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateComplianceReportsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateComplianceReportsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -640,10 +640,10 @@ func validateComplianceReportsMigratedData(t *testing.T, primary api.ClusterInfo
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateSnapshotsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateSnapshotsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -681,10 +681,10 @@ func validateSnapshotsMigratedData(t *testing.T, primary api.ClusterInfo, second
 		}
 
 		return true
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateEventsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateEventsMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -707,10 +707,10 @@ func validateEventsMigratedData(t *testing.T, primary api.ClusterInfo, secondary
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateL7MigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateL7MigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -727,10 +727,10 @@ func validateL7MigratedData(t *testing.T, primary api.ClusterInfo, secondary api
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateWAFMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateWAFMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -750,7 +750,7 @@ func validateWAFMigratedData(t *testing.T, primary api.ClusterInfo, secondary ap
 		}
 
 		return compareData(migratedData, originalData)
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
 func compareData[T any](migratedData *v1.List[T], originalData *v1.List[T]) bool {
@@ -778,7 +778,7 @@ func compareData[T any](migratedData *v1.List[T], originalData *v1.List[T]) bool
 	return true
 }
 
-func validateRuntimeMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateRuntimeMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -830,10 +830,10 @@ func validateRuntimeMigratedData(t *testing.T, primary api.ClusterInfo, secondar
 		}
 
 		return true
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateIPSetMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateIPSetMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -871,10 +871,10 @@ func validateIPSetMigratedData(t *testing.T, primary api.ClusterInfo, secondary 
 		}
 
 		return true
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
-func validateDomainSetMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue) {
+func validateDomainSetMigratedData(t *testing.T, primary api.ClusterInfo, secondary api.ClusterInfo, catalogue migrator.BackendCatalogue, waitFor time.Duration, tick time.Duration) {
 	t.Helper()
 
 	require.Eventually(t, func() bool {
@@ -912,7 +912,7 @@ func validateDomainSetMigratedData(t *testing.T, primary api.ClusterInfo, second
 		}
 
 		return true
-	}, 30*time.Second, 5*time.Millisecond)
+	}, waitFor, tick)
 }
 
 func resetUniqueFields[T any](migratedData *T) {

@@ -12,15 +12,22 @@ import (
 // by Linseed when ingesting data. We can start from time zero or from
 // a specific point in time. If we are in the middle of a pagination
 // request we need to set the after key to read the next page.
-func QueryParams(pageSize int, interval TimeInterval) v1.QueryParams {
+func QueryParams(pageSize int, interval TimeInterval, useGeneratedTime bool) v1.QueryParams {
+	timeRange := &lmaapi.TimeRange{}
+	if useGeneratedTime {
+		timeRange = &lmaapi.TimeRange{
+			Field: "generated_time",
+		}
+	}
 	params := v1.QueryParams{
 		MaxPageSize: pageSize,
-		TimeRange: &lmaapi.TimeRange{
-			Field: "generated_time",
-		},
+		TimeRange:   timeRange,
 	}
 	if interval.Start != nil {
 		params.TimeRange.From = *interval.Start
+	}
+	if interval.End != nil {
+		params.TimeRange.To = *interval.End
 	}
 	if interval.Cursor != nil {
 		params.AfterKey = interval.Cursor
@@ -33,10 +40,13 @@ func QueryParams(pageSize int, interval TimeInterval) v1.QueryParams {
 // reading. We need to sort ascendant using generated_time
 // to slowly advance through all the data stored in
 // Elasticsearch
-func SortParameters() []v1.SearchRequestSortBy {
-	return []v1.SearchRequestSortBy{
-		{
-			Field: "generated_time",
-		},
+func SortParameters(useGeneratedTime bool) []v1.SearchRequestSortBy {
+	if useGeneratedTime {
+		return []v1.SearchRequestSortBy{
+			{
+				Field: "generated_time",
+			},
+		}
 	}
+	return []v1.SearchRequestSortBy{}
 }

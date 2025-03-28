@@ -12,14 +12,15 @@ import (
 )
 
 type Operator struct {
-	backend     bapi.DNSLogBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.DNSLogBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f Operator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.DNSLog], *operator.TimeInterval, error) {
 	logParams := v1.DNSLogParams{
-		QueryParams:     operator.QueryParams(pageSize, current),
-		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters()},
+		QueryParams:     operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
+		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters(f.queryByGeneratedTime)},
 	}
 
 	list, err := f.backend.List(ctx, f.clusterInfo, &logParams)
@@ -44,9 +45,18 @@ func (f Operator) Write(ctx context.Context, items []v1.DNSLog) (*v1.BulkRespons
 	return f.backend.Create(ctx, f.clusterInfo, items)
 }
 
-func NewOperator(backend bapi.DNSLogBackend, clusterInfo bapi.ClusterInfo) Operator {
+func (f Operator) Transform(items []v1.DNSLog) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewOperator(backend bapi.DNSLogBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) Operator {
 	return Operator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }
