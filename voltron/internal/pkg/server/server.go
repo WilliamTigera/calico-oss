@@ -23,6 +23,7 @@ import (
 	"github.com/felixge/httpsnoop"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	v3 "github.com/tigera/api/pkg/apis/projectcalico/v3"
 	"golang.org/x/oauth2"
 	authnv1 "k8s.io/api/authentication/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -30,8 +31,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/transport"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
-
-	v3 "github.com/tigera/api/pkg/apis/projectcalico/v3"
 
 	"github.com/projectcalico/calico/apiserver/pkg/authentication"
 	calicotls "github.com/projectcalico/calico/crypto/pkg/tls"
