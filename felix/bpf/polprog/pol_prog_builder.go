@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 Tigera, Inc. All rights reserved.
+// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,11 +60,13 @@ type Builder struct {
 	useJmps            bool
 	maxJumpsPerProgram int
 
-	// CaliEnt features below
-
-	actionOnDrop      string
 	xdp               bool
 	numRulesInProgram int
+	flowLogsEnabled   bool
+
+	// CaliEnt features below
+
+	actionOnDrop string
 }
 
 type ipSetIDProvider interface {
@@ -510,7 +512,7 @@ func (p *Builder) writeTiers(tiers []Tier, destLeg matchLeg, allowLabel string) 
 		if action == TierEndUndef {
 			action = TierEndDeny
 		}
-		p.b.AddCommentF("End of tier %s", tier.Name)
+		p.b.AddCommentF("End of tier %s: %s", tier.Name, tier.EndAction)
 		log.Debugf("End of tier %d %q: %s", p.tierID, tier.Name, action)
 		p.writeRule(Rule{
 			Rule:    &proto.Rule{},
@@ -782,8 +784,9 @@ func (p *Builder) writeEndOfRule(rule Rule, actionLabel string) {
 	} else {
 		// If all the match criteria are met, we fall through to the end of the rule
 		// so all that's left to do is to jump to the relevant action.
-		p.writeRecordRuleHit(rule, actionLabel)
-
+		if p.flowLogsEnabled || p.policyDebugEnabled {
+			p.writeRecordRuleHit(rule, actionLabel)
+		}
 		p.b.Jump(actionLabel)
 	}
 
@@ -1306,6 +1309,12 @@ func WithPolicyMapIndexAndStride(entryPointIdx, stride int) Option {
 func WithIPv6() Option {
 	return func(p *Builder) {
 		p.forIPv6 = true
+	}
+}
+
+func WithFlowLogs() Option {
+	return func(p *Builder) {
+		p.flowLogsEnabled = true
 	}
 }
 

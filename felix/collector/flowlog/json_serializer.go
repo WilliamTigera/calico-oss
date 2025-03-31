@@ -140,7 +140,7 @@ func (out *JSONOutput) FillFrom(l *FlowLog) {
 		out.SourceLabels = nil
 	} else {
 		out.SourceLabels = &labelsJSONOutput{
-			Labels: flattenLabels(l.SrcLabels),
+			Labels: utils.FlattenLabels(l.SrcLabels),
 		}
 	}
 
@@ -172,7 +172,7 @@ func (out *JSONOutput) FillFrom(l *FlowLog) {
 		out.DestLabels = nil
 	} else {
 		out.DestLabels = &labelsJSONOutput{
-			Labels: flattenLabels(l.DstLabels),
+			Labels: utils.FlattenLabels(l.DstLabels),
 		}
 	}
 
@@ -325,7 +325,7 @@ func (o *JSONOutput) ToFlowLog() (FlowLog, error) {
 	if o.SourceLabels == nil {
 		fl.SrcLabels = nil
 	} else {
-		fl.SrcLabels = unflattenLabels(o.SourceLabels.Labels)
+		fl.SrcLabels = utils.UnflattenLabels(o.SourceLabels.Labels)
 	}
 
 	switch o.DestType {
@@ -357,7 +357,7 @@ func (o *JSONOutput) ToFlowLog() (FlowLog, error) {
 	if o.DestLabels == nil {
 		fl.DstLabels = nil
 	} else {
-		fl.DstLabels = unflattenLabels(o.DestLabels.Labels)
+		fl.DstLabels = utils.UnflattenLabels(o.DestLabels.Labels)
 	}
 
 	if len(o.DestDomains) == 0 {
@@ -370,7 +370,7 @@ func (o *JSONOutput) ToFlowLog() (FlowLog, error) {
 	}
 
 	fl.Action = Action(o.Action)
-	fl.Reporter = reporterType(o.Reporter)
+	fl.Reporter = ReporterType(o.Reporter)
 	fl.BytesIn = int(o.BytesIn)
 	fl.BytesOut = int(o.BytesOut)
 	fl.PacketsIn = int(o.PacketsIn)

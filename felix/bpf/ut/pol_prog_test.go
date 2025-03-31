@@ -2504,7 +2504,7 @@ func TestPolicyProgramsExceedMatchIdSpace(t *testing.T) {
 
 	test.allowedPackets = []testFlowLogCase{pkt}
 
-	runTest(t, test)
+	runTest(t, test, polprog.WithFlowLogs())
 }
 
 func TestPolicyProgramsFlowLog(t *testing.T) {
@@ -2746,7 +2746,7 @@ func TestPolicyProgramsFlowLog(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf("name=%s", test.name), func(t *testing.T) { runTest(t, test.test) })
+		t.Run(fmt.Sprintf("name=%s", test.name), func(t *testing.T) { runTest(t, test.test, polprog.WithFlowLogs()) })
 	}
 }
 

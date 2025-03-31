@@ -820,7 +820,7 @@ var _ = Describe("FlowLogsReporter should adjust aggregation levels", func() {
 	})
 })
 
-func newExpectedFlowLog(t tuple.Tuple, nf, nfs, nfc int, a Action, fr reporterType, pi, po, bi, bo int, srcMeta, dstMeta endpoint.Metadata, dstService FlowService, srcLabels, dstLabels map[string]string, fap, fep, fpp FlowPolicySet, fe FlowExtras, fpi testProcessInfo, tcps testTcpStats) FlowLog {
+func newExpectedFlowLog(t tuple.Tuple, nf, nfs, nfc int, a Action, fr ReporterType, pi, po, bi, bo int, srcMeta, dstMeta endpoint.Metadata, dstService FlowService, srcLabels, dstLabels map[string]string, fap, fep, fpp FlowPolicySet, fe FlowExtras, fpi testProcessInfo, tcps testTcpStats) FlowLog {
 	return FlowLog{
 		FlowMeta: FlowMeta{
 			Tuple:      t,

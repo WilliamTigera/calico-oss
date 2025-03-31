@@ -935,6 +935,10 @@ type FelixConfigurationSpec struct {
 	// When FlowLogsCollectorDebugTrace is set to true, enables the logs in the collector to be
 	// printed in their entirety.
 	FlowLogsCollectorDebugTrace *bool `json:"flowLogsCollectorDebugTrace,omitempty"`
+
+	// FlowLogGoldmaneServer is the flow server endpoint to which flow data should be published.
+	FlowLogsGoldmaneServer *string `json:"flowLogsGoldmaneServer,omitempty"`
+
 	// FlowLogsDestDomainsByClient is used to configure if the source IP is used in the mapping of top
 	// level destination domains. [Default: true]
 	FlowLogsDestDomainsByClient *bool `json:"flowLogsDestDomainsByClient,omitempty"`

@@ -161,7 +161,9 @@ func TestProgramSplitting(t *testing.T) {
 	}
 	pg := NewBuilder(alloc, 1, 2, 3, 4,
 		WithAllowDenyJumps(666, 777),
-		WithPolicyMapIndexAndStride(15, 1000))
+		WithPolicyMapIndexAndStride(15, 1000),
+		WithPolicyDebugEnabled(),
+	)
 
 	// First tier: 10k rules that do a mix of pass/deny.
 	tier0 := Tier{

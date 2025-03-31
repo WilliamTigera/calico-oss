@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2024 Tigera, Inc. All rights reserved.
+// Copyright (c) 2016-2025 Tigera, Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,7 +67,8 @@ func (r *DefaultRuleRenderer) ProtoRulesToIptablesRules(protoRules []*proto.Rule
 		// TODO (Matt): Need rule hash when that's cleaned up.
 		rules = append(rules, r.ProtoRuleToIptablesRules(protoRule, ipVersion, owner, dir, ii, name, untracked, staged)...)
 	}
-	if staged {
+
+	if staged && r.FlowLogsEnabled {
 		// If staged, append an extra no-match nflog rule. This will be reported by the collector as an end-of-tier
 		// deny associated with this policy iff the end-if-tier pass is hit (i.e. there are no enforced policies that
 		// actually drop the packet already).
@@ -654,7 +655,7 @@ func (r *DefaultRuleRenderer) CombineMatchAndActionsForProtoRule(
 		}
 
 		// NFLOG the allow - we don't do this for untracked due to the performance hit.
-		if !untracked {
+		if !untracked && r.FlowLogsEnabled {
 			rules = append(rules, generictables.Rule{
 				Match: r.NewMatch(),
 				Action: r.Nflog(
@@ -675,7 +676,7 @@ func (r *DefaultRuleRenderer) CombineMatchAndActionsForProtoRule(
 		}
 
 		// NFLOG the pass - we don't do this for untracked due to the performance hit.
-		if !untracked {
+		if !untracked && r.FlowLogsEnabled {
 			rules = append(rules, generictables.Rule{
 				Match: r.NewMatch(),
 				Action: r.Nflog(
@@ -700,7 +701,7 @@ func (r *DefaultRuleRenderer) CombineMatchAndActionsForProtoRule(
 		}
 
 		// NFLOG the deny - we don't do this for untracked due to the performance hit.
-		if !untracked {
+		if !untracked && r.FlowLogsEnabled {
 			rules = append(rules, generictables.Rule{
 				Match: r.NewMatch(),
 				Action: r.Nflog(

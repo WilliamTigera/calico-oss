@@ -1,7 +1,7 @@
 //go:build !windows
 // +build !windows
 
-// Copyright (c) 2020-2023 Tigera, Inc. All rights reserved.
+// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ type AttachPoint struct {
 	NATin                uint32
 	NATout               uint32
 	UDPOnly              bool
+	FlowLogsEnabled      bool
 
 	// EE only
 	VethNS                  uint16
@@ -495,6 +496,10 @@ func (ap *AttachPoint) Configure() *libbpf.TcGlobalData {
 
 	if ap.RedirectPeer {
 		globalData.Flags |= libbpf.GlobalsRedirectPeer
+	}
+
+	if ap.FlowLogsEnabled {
+		globalData.Flags |= libbpf.GlobalsFlowLogsEnabled
 	}
 
 	globalData.HostTunnelIPv4 = globalData.HostIPv4

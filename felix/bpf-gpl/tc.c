@@ -1,5 +1,5 @@
 // Project Calico BPF dataplane programs.
-// Copyright (c) 2020-2023 Tigera, Inc. All rights reserved.
+// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 #include <linux/types.h>
@@ -1364,8 +1364,10 @@ int calico_tc_skb_accepted_entrypoint(struct __sk_buff *skb)
 	}
 
 	if (!policy_skipped) {
-		event_flow_log(ctx);
-		CALI_DEBUG("Flow log event generated for ALLOW\n");
+		if (FLOWLOGS_ENABLED) {
+			event_flow_log(ctx);
+			CALI_DEBUG("Flow log event generated for ALLOW\n");
+		}
 		update_rule_counters(ctx);
 		skb_log(ctx, true);
 	}
@@ -2155,8 +2157,11 @@ int calico_tc_skb_drop(struct __sk_buff *skb)
 			goto allow;
 		}
 	}
-	event_flow_log(ctx);
-	CALI_DEBUG("Flow log event generated for DENY/DROP\n");
+
+	if (FLOWLOGS_ENABLED) {
+		event_flow_log(ctx);
+		CALI_DEBUG("Flow log event generated for DENY/DROP\n");
+	}
 	goto deny;
 
 allow:

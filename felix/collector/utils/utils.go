@@ -138,3 +138,52 @@ func ExtractNamespaceFromNetworkSet(aggregatedName string) (string, string) {
 	}
 	return FieldNotIncluded, aggregatedName
 }
+
+func FlattenLabels(labels map[string]string) []string {
+	respSlice := []string{}
+	for k, v := range labels {
+		l := fmt.Sprintf("%v=%v", k, v)
+		respSlice = append(respSlice, l)
+	}
+	return respSlice
+}
+
+func UnflattenLabels(labelSlice []string) map[string]string {
+	resp := map[string]string{}
+	for _, label := range labelSlice {
+		labelKV := strings.Split(label, "=")
+		if len(labelKV) != 2 {
+			continue
+		}
+		resp[labelKV[0]] = labelKV[1]
+	}
+	return resp
+}
+
+var protoNames = map[int]string{
+	1:   "icmp",
+	6:   "tcp",
+	17:  "udp",
+	4:   "ipip",
+	50:  "esp",
+	58:  "icmp6",
+	132: "sctp",
+}
+
+func ProtoToString(p int) string {
+	s, ok := protoNames[p]
+	if ok {
+		return s
+	}
+	return strconv.Itoa(p)
+}
+
+func StringToProto(s string) int {
+	for i, st := range protoNames {
+		if s == st {
+			return i
+		}
+	}
+	p, _ := strconv.Atoi(s)
+	return p
+}

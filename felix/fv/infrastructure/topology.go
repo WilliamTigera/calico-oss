@@ -37,6 +37,12 @@ import (
 	licutils "github.com/projectcalico/calico/licensing/utils"
 )
 
+const (
+	FlowLogSourceNone = iota
+	FlowLogSourceFile
+	FlowLogSourceGoldmane
+)
+
 type TopologyOptions struct {
 	FelixLogSeverity        string
 	FelixDebugFilenameRegex string
@@ -72,6 +78,7 @@ type TopologyOptions struct {
 	IPv6PoolUsages            []api.IPPoolAllowedUse
 	NeedNodeIP                bool
 	PerNodeOptions            []PerNodeOptions
+	FlowLogSource             int
 }
 
 type PerNodeOptions struct {

@@ -226,11 +226,6 @@ type Config struct {
 	BPFProfiling                       string            `config:"oneof(Disabled,Enabled);Disabled;non-zero"`
 	BPFExportBufferSizeMB              int               `config:"int;1;non-zero"`
 
-	FlowLogsCollectProcessInfo  bool `config:"bool;false"`
-	FlowLogsCollectTcpStats     bool `config:"bool;false"`
-	FlowLogsCollectProcessPath  bool `config:"bool;false"`
-	FlowLogsCollectorDebugTrace bool `config:"bool;false"`
-
 	// DebugBPFCgroupV2 controls the cgroup v2 path that we apply the connect-time load balancer to.  Most distros
 	// are configured for cgroup v1, which prevents all but the root cgroup v2 from working so this is only useful
 	// for development right now.
@@ -469,6 +464,12 @@ type Config struct {
 	FlowLogsFileNatOutgoingPortLimit      int    `config:"int;3"`
 	FlowLogsFileDomainsLimit              int    `config:"int;5"`
 
+	FlowLogsCollectProcessInfo  bool   `config:"bool;false"`
+	FlowLogsCollectTcpStats     bool   `config:"bool;false"`
+	FlowLogsCollectProcessPath  bool   `config:"bool;false"`
+	FlowLogsCollectorDebugTrace bool   `config:"bool;false"`
+	FlowLogsGoldmaneServer      string `config:"string;"`
+
 	// Config for DNS logs.
 	DNSLogsFlushInterval       time.Duration `config:"seconds;300"`
 	DNSLogsFileEnabled         bool          `config:"bool;false"`
@@ -706,6 +707,11 @@ func (config *Config) TableRefreshInterval() time.Duration {
 		return config.NftablesRefreshInterval
 	}
 	return config.IptablesRefreshInterval
+}
+
+func (config *Config) FlowLogsEnabled() bool {
+	// Flow logs is always enabled in Calico Enterprise, and Cloud.
+	return true
 }
 
 // Copy makes a copy of the object.  Internal state is deep copied but config parameters are only shallow copied.

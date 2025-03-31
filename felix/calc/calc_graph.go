@@ -583,7 +583,7 @@ func NewCalculationGraph(callbacks PipelineCallbacks, cache *LookupsCache, conf 
 		// The lookup cache also caches networkset information for flow log reporting.
 		cache.nsCache.RegisterWith(allUpdDispatcher)
 	} else {
-		log.Debug("lookup cache is nil on windows platform")
+		log.Debug("lookup cache is disabled")
 	}
 
 	if conf.TPROXYModeEnabled() {

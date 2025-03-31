@@ -1,5 +1,6 @@
-// Copyright (c) 2022-2023 Tigera, Inc. All rights reserved.
-package metrics
+// Copyright (c) 2022-2025 Tigera, Inc. All rights reserved.
+
+package flowlogs
 
 import (
 	"errors"
@@ -10,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/projectcalico/calico/felix/collector/flowlog"
-	"github.com/projectcalico/calico/felix/fv/flowlogs"
 )
 
 type Aggregation int
@@ -28,17 +28,8 @@ const (
 	SourcePortIsNotIncluded = 0
 )
 
-var (
-	NoDestService = flowlog.FlowService{
-		Namespace: "-",
-		Name:      "-",
-		PortName:  "-",
-		PortNum:   0,
-	}
-)
-
 type FlowLogReader interface {
-	FlowLogDir() string
+	FlowLogs() ([]flowlog.FlowLog, error)
 }
 
 // The expected policies for the flow.
@@ -57,14 +48,16 @@ type FlowTester struct {
 
 type FlowTesterOptions struct {
 	// Whether to expect labels or policies in the flow logs
-	ExpectLabels          bool
-	ExpectPolicies        bool
-	ExpectPendingPolicies bool
+	ExpectLabels           bool
+	ExpectAllPolicies      bool
+	ExpectEnforcedPolicies bool
+	ExpectPendingPolicies  bool
 
 	// Whether to include labels or policies in the match criteria
-	MatchLabels          bool
-	MatchPolicies        bool
-	MatchPendingPolicies bool
+	MatchLabels           bool
+	MatchAllPolicies      bool
+	MatchEnforcedPolicies bool
+	MatchPendingPolicies  bool
 
 	// Set of include filters used to only include certain flows. Set of filters is ORed.
 	Includes []IncludeFilter
@@ -105,7 +98,7 @@ func (t *FlowTester) PopulateFromFlowLogs(reader FlowLogReader) error {
 	t.reset()
 
 	// Read flows from the logs.
-	cwlogs, err := flowlogs.ReadFlowLogs(reader.FlowLogDir(), "file")
+	cwlogs, err := reader.FlowLogs()
 	if err != nil {
 		return err
 	}
@@ -140,12 +133,19 @@ func (t *FlowTester) PopulateFromFlowLogs(reader FlowLogReader) error {
 				return fmt.Errorf("unexpected dst Labels in %v", fl.FlowLabels)
 			}
 		}
-		if t.options.ExpectPolicies {
+		if t.options.ExpectAllPolicies {
 			if len(fl.FlowAllPolicySet) == 0 {
 				return fmt.Errorf("missing Policies in %v", fl.FlowMeta)
 			}
 		} else if len(fl.FlowAllPolicySet) != 0 {
 			return fmt.Errorf("unexpected Policies %v in %v", fl.FlowAllPolicySet, fl.FlowMeta)
+		}
+		if t.options.ExpectEnforcedPolicies {
+			if len(fl.FlowEnforcedPolicySet) == 0 {
+				return fmt.Errorf("missing enforced policies in %v", fl.FlowMeta)
+			}
+		} else if len(fl.FlowEnforcedPolicySet) != 0 {
+			return fmt.Errorf("unexpected enforced policies %v in %v", fl.FlowEnforcedPolicySet, fl.FlowMeta)
 		}
 		if t.options.ExpectPendingPolicies {
 			if len(fl.FlowPendingPolicySet) == 0 {
@@ -283,14 +283,15 @@ func (t *FlowTester) flowMetaFromFlowLog(fl flowlog.FlowLog) flowMeta {
 		sort.Strings(dstLabels)
 		fm.labels = strings.Join(srcLabels, ";") + "|" + strings.Join(dstLabels, ";")
 	}
-	if t.options.MatchPolicies {
+	if t.options.MatchAllPolicies {
 		var policies []string
 		for p := range fl.FlowAllPolicySet {
 			policies = append(policies, p)
 		}
 		sort.Strings(policies)
 		fm.policies = strings.Join(policies, ";")
-
+	}
+	if t.options.MatchEnforcedPolicies {
 		var enforced []string
 		for p := range fl.FlowEnforcedPolicySet {
 			enforced = append(enforced, p)

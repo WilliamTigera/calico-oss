@@ -15,15 +15,6 @@ import (
 	"github.com/projectcalico/calico/felix/collector/flowlog"
 )
 
-func ReadFlowLogs(flowLogDir, output string) ([]flowlog.FlowLog, error) {
-	switch output {
-	case "file":
-		return ReadFlowLogsFile(flowLogDir)
-	default:
-		panic("unrecognized flow log output")
-	}
-}
-
 func ReadFlowLogsFile(flowLogDir string) ([]flowlog.FlowLog, error) {
 	var flowLogs []flowlog.FlowLog
 	log.WithField("dir", flowLogDir).Info("Reading Flow Logs from file")

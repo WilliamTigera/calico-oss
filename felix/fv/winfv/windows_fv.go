@@ -12,6 +12,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tigera/windows-networking/pkg/testutils"
+
+	"github.com/projectcalico/calico/felix/collector/flowlog"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 )
 
 type CalicoBackEnd string
@@ -120,8 +123,8 @@ func (f *WinFV) AddConfigItems(configs map[string]interface{}) error {
 	return nil
 }
 
-func (f *WinFV) FlowLogDir() string {
-	return f.flowLogDir
+func (f *WinFV) FlowLogs() ([]flowlog.FlowLog, error) {
+	return flowlogs.ReadFlowLogsFile(f.flowLogDir)
 }
 
 type JsonMappingV1 struct {

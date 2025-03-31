@@ -23,6 +23,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"net"
 	"os"
 	"os/exec"
@@ -71,7 +72,6 @@ import (
 	"github.com/projectcalico/calico/felix/idalloc"
 	"github.com/projectcalico/calico/felix/ifacemonitor"
 	"github.com/projectcalico/calico/felix/ip"
-	"github.com/projectcalico/calico/felix/ipsets"
 	"github.com/projectcalico/calico/felix/logutils"
 	"github.com/projectcalico/calico/felix/proto"
 	"github.com/projectcalico/calico/felix/routetable"
@@ -391,10 +391,12 @@ type bpfEndpointManager struct {
 	natOutIdx   int
 	bpfIfaceMTU int
 
+	// Flow logs related fields.
+	lookupsCache *calc.LookupsCache
+
 	// CaliEnt features below
 
 	enableTcpStats       bool
-	lookupsCache         *calc.LookupsCache
 	actionOnDrop         string
 	egIPEnabled          bool
 	egwVxlanPort         uint16
@@ -434,49 +436,7 @@ type ManagerWithHEPUpdate interface {
 	GetIfaceQDiscInfo(ifaceName string) (bool, int, int)
 }
 
-func NewTestEpMgr(
-	config *Config,
-	bpfmaps *bpfmap.Maps,
-	workloadIfaceRegex *regexp.Regexp,
-) (ManagerWithHEPUpdate, error) {
-	return newBPFEndpointManager(nil, config, bpfmaps, true, workloadIfaceRegex, idalloc.New(), idalloc.New(),
-		rules.NewRenderer(rules.Config{
-			BPFEnabled:             true,
-			IPIPEnabled:            true,
-			IPIPTunnelAddress:      nil,
-			IPSetConfigV4:          ipsets.NewIPVersionConfig(ipsets.IPFamilyV4, "cali", nil, nil),
-			IPSetConfigV6:          ipsets.NewIPVersionConfig(ipsets.IPFamilyV6, "cali", nil, nil),
-			MarkAccept:             0x8,
-			MarkPass:               0x10,
-			MarkScratch0:           0x20,
-			MarkScratch1:           0x40,
-			MarkEndpoint:           0xff00,
-			MarkNonCaliEndpoint:    0x0100,
-			KubeIPVSSupportEnabled: true,
-			WorkloadIfacePrefixes:  []string{"cali", "tap"},
-			VXLANPort:              4789,
-			VXLANVNI:               4096,
-
-			MarkDrop: 0x80,
-		}),
-		generictables.NewNoopTable(),
-		generictables.NewNoopTable(),
-		nil,
-		logutils.NewSummarizer("test"),
-		&routetable.DummyTable{},
-		&routetable.DummyTable{},
-
-		// EE args
-		calc.NewLookupsCache(),
-		"DROP",
-		false,
-		nil,
-		nil,
-		1500,
-	)
-}
-
-func newBPFEndpointManager(
+func NewBPFEndpointManager(
 	dp bpfDataplane,
 	config *Config,
 	bpfmaps *bpfmap.Maps,
@@ -491,10 +451,10 @@ func newBPFEndpointManager(
 	opReporter logutils.OpRecorder,
 	mainRouteTableV4 routetable.Interface,
 	mainRouteTableV6 routetable.Interface,
+	lookupsCache *calc.LookupsCache,
 
 	// CaliEnt args below
 
-	lookupsCache *calc.LookupsCache,
 	actionOnDrop string,
 	enableTcpStats bool,
 	healthAggregator *health.HealthAggregator,
@@ -3021,6 +2981,10 @@ func (d *bpfEndpointManagerDataplane) configureTCAttachPoint(policyDirection Pol
 		}
 	}
 
+	if d.mgr.FlowLogsEnabled() {
+		ap.FlowLogsEnabled = true
+	}
+
 	var toOrFrom tcdefs.ToOrFromEp
 	if ap.Hook == hook.Ingress {
 		toOrFrom = tcdefs.FromEp
@@ -3165,7 +3129,13 @@ func strToByte64(s string) [64]byte {
 }
 
 func (m *bpfEndpointManager) ruleMatchIDFromNFLOGPrefix(nflogPrefix string) polprog.RuleMatchID {
-	return m.lookupsCache.GetID64FromNFLOGPrefix(strToByte64(nflogPrefix))
+	if m.FlowLogsEnabled() {
+		return m.lookupsCache.GetID64FromNFLOGPrefix(strToByte64(nflogPrefix))
+	}
+	// Lookup cache is not available, so generate an ID out of provided prefix.
+	h := fnv.New64a()
+	h.Write([]byte(nflogPrefix))
+	return h.Sum64()
 }
 
 func (m *bpfEndpointManager) endOfTierPassID(dir rules.RuleDir, tier string) polprog.RuleMatchID {
@@ -3191,6 +3161,10 @@ func (m *bpfEndpointManager) isWorkloadIface(iface string) bool {
 func (m *bpfEndpointManager) isDataIface(iface string) bool {
 	return m.dataIfaceRegex.MatchString(iface) ||
 		(m.hostNetworkedNATMode != hostNetworkedNATDisabled && (iface == dataplanedefs.BPFOutDev || iface == "lo"))
+}
+
+func (m *bpfEndpointManager) FlowLogsEnabled() bool {
+	return m.lookupsCache != nil
 }
 
 func (m *bpfEndpointManager) isL3Iface(iface string) bool {
@@ -3886,6 +3860,10 @@ func (m *bpfEndpointManager) loadPolicyProgram(
 		opts = append(opts, polprog.WithIPv6())
 		ipsetsMapFD = m.v6.IpsetsMap.MapFD()
 		ipSetIDAlloc = m.v6.ipSetIDAlloc
+	}
+
+	if m.FlowLogsEnabled() {
+		opts = append(opts, polprog.WithFlowLogs())
 	}
 
 	pg := polprog.NewBuilder(

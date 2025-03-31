@@ -1,5 +1,6 @@
-// Copyright (c) 2019-2023 Tigera, Inc. All rights reserved.
-package metrics
+// Copyright (c) 2019-2025 Tigera, Inc. All rights reserved.
+
+package flowlogs
 
 import (
 	"errors"
@@ -12,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/projectcalico/calico/felix/collector/flowlog"
-	"github.com/projectcalico/calico/felix/fv/flowlogs"
 )
 
 // This flow tester makes too many assumptions about the tests, so isn't particularly useful for handling more
@@ -55,14 +55,14 @@ func NewFlowTesterDeprecated(readers []FlowLogReader, expectLabels, expectPolici
 }
 
 // PopulateFromFlowLogs initializes the flow tester from the flow logs.
-func (t *FlowTesterDeprecated) PopulateFromFlowLogs(flowLogsOutput string) error {
+func (t *FlowTesterDeprecated) PopulateFromFlowLogs() error {
 	for ii, f := range t.readers {
 		t.flowsStarted[ii] = make(map[flowlog.FlowMeta]int)
 		t.flowsCompleted[ii] = make(map[flowlog.FlowMeta]int)
 		t.packets[ii] = make(map[flowlog.FlowMeta]int)
 		t.policies[ii] = make(map[flowlog.FlowMeta][]string)
 
-		cwlogs, err := flowlogs.ReadFlowLogs(f.FlowLogDir(), flowLogsOutput)
+		cwlogs, err := f.FlowLogs()
 		if err != nil {
 			return err
 		}
@@ -254,9 +254,9 @@ func (t *FlowTesterDeprecated) CheckAllFlowsAccountedFor() error {
 	return errors.New(strings.Join(errs, "\n==============\n"))
 }
 
-func (t *FlowTesterDeprecated) IterFlows(flowLogsOutput string, cb func(flowlog.FlowLog) error) error {
+func (t *FlowTesterDeprecated) IterFlows(cb func(flowlog.FlowLog) error) error {
 	for _, f := range t.readers {
-		flogs, err := flowlogs.ReadFlowLogs(f.FlowLogDir(), flowLogsOutput)
+		flogs, err := f.FlowLogs()
 		if err != nil {
 			return err
 		}
@@ -269,10 +269,10 @@ func (t *FlowTesterDeprecated) IterFlows(flowLogsOutput string, cb func(flowlog.
 	return nil
 }
 
-func (t *FlowTesterDeprecated) GetFlows(flowLogsOutput string) []flowlog.FlowLog {
+func (t *FlowTesterDeprecated) GetFlows() []flowlog.FlowLog {
 	logs := []flowlog.FlowLog{}
 	for _, f := range t.readers {
-		flogs, err := flowlogs.ReadFlowLogs(f.FlowLogDir(), flowLogsOutput)
+		flogs, err := f.FlowLogs()
 		if err == nil {
 			logs = append(logs, flogs...)
 		}

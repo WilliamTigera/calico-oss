@@ -1,4 +1,4 @@
-// Copyright (c) 2022 Tigera, Inc. All rights reserved.
+// Copyright (c) 2022-2025 Tigera, Inc. All rights reserved.
 
 package winfv_test
 
@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tigera/windows-networking/pkg/testutils"
 
-	"github.com/projectcalico/calico/felix/fv/metrics"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	. "github.com/projectcalico/calico/felix/fv/winfv"
 	"github.com/projectcalico/calico/libcalico-go/lib/winutils"
 )
@@ -48,7 +48,7 @@ type expectation struct {
 var _ = Describe("Windows flow logs test", func() {
 	var (
 		expectation                    expectation
-		flowLogsReaders                []metrics.FlowLogReader
+		flowLogsReaders                []flowlogs.FlowLogReader
 		porter, client, clientB, nginx string
 		fv                             *WinFV
 		err                            error
@@ -61,7 +61,7 @@ var _ = Describe("Windows flow logs test", func() {
 			winutils.GetHostPath("c:\\TigeraCalico\\felix-dns-cache.txt"))
 		Expect(err).NotTo(HaveOccurred())
 
-		flowLogsReaders = []metrics.FlowLogReader{fv}
+		flowLogsReaders = []flowlogs.FlowLogReader{fv}
 
 		// Get Pod IPs.
 		client = testutils.InfraPodIP("client", "demo")
@@ -77,16 +77,16 @@ var _ = Describe("Windows flow logs test", func() {
 		Expect(nginx).NotTo(BeEmpty())
 	})
 
-	checkFlowLogs := func(flowLogsOutput string) {
+	checkFlowLogs := func() {
 		// Within 60s we should see the complete set of expected allow and deny
 		// flow logs.
 		Eventually(func() error {
-			flowTester := metrics.NewFlowTesterDeprecated(flowLogsReaders, expectation.labels, expectation.policies, 80)
+			flowTester := flowlogs.NewFlowTesterDeprecated(flowLogsReaders, expectation.labels, expectation.policies, 80)
 			if fv.GetBackendType() == CalicoBackendVXLAN {
 				// Windows VXLAN can't complete a flow in time.
 				flowTester.IgnoreStartCompleteCount = true
 			}
-			err := flowTester.PopulateFromFlowLogs(flowLogsOutput)
+			err := flowTester.PopulateFromFlowLogs()
 			if err != nil {
 				return err
 			}
@@ -101,8 +101,8 @@ var _ = Describe("Windows flow logs test", func() {
 				err = flowTester.CheckFlow(
 					"wep demo client client", client,
 					"wep demo porter porter", porter,
-					metrics.NoService, 1, 1,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 1,
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "dst",
 							Action:   "allow",
@@ -116,7 +116,7 @@ var _ = Describe("Windows flow logs test", func() {
 					"wep demo porter porter", porter,
 					"wep demo nginx nginx", nginx,
 					"demo nginx - 80", 1, 1,
-					[]metrics.ExpectedPolicy{
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "src",
 							Action:   "allow",
@@ -130,8 +130,8 @@ var _ = Describe("Windows flow logs test", func() {
 				err = flowTester.CheckFlow(
 					"wep demo - client", "",
 					"wep demo - porter", "",
-					metrics.NoService, 1, 1,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 1,
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "dst",
 							Action:   "allow",
@@ -145,7 +145,7 @@ var _ = Describe("Windows flow logs test", func() {
 					"wep demo - porter", "",
 					"wep demo - nginx", "",
 					"demo nginx - 80", 1, 1,
-					[]metrics.ExpectedPolicy{
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "src",
 							Action:   "allow",
@@ -161,8 +161,8 @@ var _ = Describe("Windows flow logs test", func() {
 				err = flowTester.CheckFlow(
 					"wep demo client-b client-b", clientB,
 					"wep demo porter porter", porter,
-					metrics.NoService, 1, 1,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 1,
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "dst",
 							Action:   "deny",
@@ -176,8 +176,8 @@ var _ = Describe("Windows flow logs test", func() {
 				err = flowTester.CheckFlow(
 					"wep demo client-b client-b", clientB,
 					"wep demo porter porter", porter,
-					metrics.NoService, 1, 1,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 1,
+					[]flowlogs.ExpectedPolicy{
 						{
 							Reporter: "dst",
 							Action:   "deny",
@@ -228,7 +228,7 @@ var _ = Describe("Windows flow logs test", func() {
 			}
 			setupAndRunFelix(config)
 
-			checkFlowLogs("file")
+			checkFlowLogs()
 		})
 
 		It("should get expected flow logs with default aggregation", func() {
@@ -244,7 +244,7 @@ var _ = Describe("Windows flow logs test", func() {
 			}
 			setupAndRunFelix(config)
 
-			checkFlowLogs("file")
+			checkFlowLogs()
 		})
 
 		AfterEach(func() {

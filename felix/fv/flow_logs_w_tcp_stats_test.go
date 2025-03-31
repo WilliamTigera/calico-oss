@@ -1,7 +1,7 @@
 //go:build fvtests
 // +build fvtests
 
-// Copyright (c) 2023 Tigera, Inc. All rights reserved.
+// Copyright (c) 2023-2025 Tigera, Inc. All rights reserved.
 
 package fv_test
 
@@ -16,8 +16,8 @@ import (
 
 	"github.com/projectcalico/calico/felix/collector/flowlog"
 	"github.com/projectcalico/calico/felix/fv/connectivity"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	"github.com/projectcalico/calico/felix/fv/infrastructure"
-	"github.com/projectcalico/calico/felix/fv/metrics"
 	"github.com/projectcalico/calico/felix/fv/workload"
 	"github.com/projectcalico/calico/libcalico-go/lib/apiconfig"
 )
@@ -27,7 +27,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log with TCP stats", [
 		infra           infrastructure.DatastoreInfra
 		opts            infrastructure.TopologyOptions
 		tc              infrastructure.TopologyContainers
-		flowLogsReaders []metrics.FlowLogReader
+		flowLogsReaders []flowlogs.FlowLogReader
 		ep1_1           *workload.Workload
 		ep1_2           *workload.Workload
 	)
@@ -37,6 +37,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log with TCP stats", [
 	BeforeEach(func() {
 		infra = getInfra()
 		opts = infrastructure.DefaultTopologyOptions()
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
 		opts.IPIPEnabled = false
 		opts.ExtraEnvVars["FELIX_FLOWLOGSFILEENABLED"] = "true"
@@ -67,7 +68,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log with TCP stats", [
 		ep1_2 = workload.Run(tc.Felixes[1], "ep1-2", "default", "10.65.1.0", "8055", "tcp")
 		ep1_2.ConfigureInInfra(infra)
 
-		flowLogsReaders = []metrics.FlowLogReader{}
+		flowLogsReaders = []flowlogs.FlowLogReader{}
 		for _, f := range tc.Felixes {
 			flowLogsReaders = append(flowLogsReaders, f)
 		}
@@ -78,8 +79,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log with TCP stats", [
 		cc.ExpectSome(ep1_1, ep1_2)
 		cc.CheckConnectivity()
 		Eventually(func() error {
-			flowTester := metrics.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
-			flogs := flowTester.GetFlows("file")
+			flowTester := flowlogs.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
+			flogs := flowTester.GetFlows()
 			if len(flogs) == 0 {
 				return fmt.Errorf("Error reading flowlogs")
 			}

@@ -6455,6 +6455,13 @@ func schema_pkg_apis_projectcalico_v3_FelixConfigurationSpec(ref common.Referenc
 							Format:      "",
 						},
 					},
+					"flowLogsGoldmaneServer": {
+						SchemaProps: spec.SchemaProps{
+							Description: "FlowLogGoldmaneServer is the flow server endpoint to which flow data should be published.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"flowLogsDestDomainsByClient": {
 						SchemaProps: spec.SchemaProps{
 							Description: "FlowLogsDestDomainsByClient is used to configure if the source IP is used in the mapping of top level destination domains. [Default: true]",

@@ -1,7 +1,7 @@
 //go:build !windows
 // +build !windows
 
-// Copyright (c) 2021-2022 Tigera, Inc. All rights reserved.
+// Copyright (c) 2021-2025 Tigera, Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -433,6 +433,7 @@ const (
 	GlobalsLoUDPOnly        uint32 = C.CALI_GLOBALS_LO_UDP_ONLY
 	GlobalsDNSInline        uint32 = C.CALI_GLOBALS_DNS_INLINE
 	GlobalsRedirectPeer     uint32 = C.CALI_GLOBALS_REDIRECT_PEER
+	GlobalsFlowLogsEnabled  uint32 = C.CALI_GLOBALS_FLOWLOGS_ENABLED
 )
 
 func (t *TcGlobalData) Set(m *Map) error {

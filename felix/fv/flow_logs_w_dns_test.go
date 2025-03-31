@@ -24,8 +24,8 @@ import (
 	"github.com/projectcalico/calico/felix/collector/flowlog"
 	"github.com/projectcalico/calico/felix/fv/containers"
 	"github.com/projectcalico/calico/felix/fv/dns"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	"github.com/projectcalico/calico/felix/fv/infrastructure"
-	"github.com/projectcalico/calico/felix/fv/metrics"
 	"github.com/projectcalico/calico/felix/fv/utils"
 	"github.com/projectcalico/calico/felix/fv/workload"
 	"github.com/projectcalico/calico/libcalico-go/lib/apiconfig"
@@ -58,7 +58,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests", []apiconfig.
 		tc                infrastructure.TopologyContainers
 		dnsServer         *containers.Container
 		externalWorkloads []*containers.Container
-		flowLogsReaders   []metrics.FlowLogReader
+		flowLogsReaders   []flowlogs.FlowLogReader
 		client            client.Interface
 		ep1_1             *workload.Workload
 		dnsServerIP       string
@@ -91,6 +91,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests", []apiconfig.
 	BeforeEach(func() {
 		infra = getInfra()
 		opts = infrastructure.DefaultTopologyOptions()
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
 		// Instead of relying on external websites for DNS tests, we use an internally hosted HTTP service,
 		// and internal dns server, making functional validation tests more self-contained and reliable.
@@ -211,7 +212,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests", []apiconfig.
 		_, err = client.GlobalNetworkPolicies().Create(utils.Ctx, gnp, utils.NoOptions)
 		Expect(err).NotTo(HaveOccurred())
 
-		flowLogsReaders = []metrics.FlowLogReader{}
+		flowLogsReaders = []flowlogs.FlowLogReader{}
 		for _, f := range tc.Felixes {
 			flowLogsReaders = append(flowLogsReaders, f)
 		}
@@ -253,14 +254,14 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests", []apiconfig.
 		}
 
 		Eventually(func() error {
-			flowTester := metrics.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
+			flowTester := flowlogs.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
 
 			// Track all errors before failing.  All flows originating from our workload should be going to either
 			// the DNS server or the network sets.  If bound for the network sets then networkset1 should be denied and
 			// networkset2 should be allowed.  All should have policy hits from both tiers.
 			var errs []string
 			var foundDNS, foundNetset1, foundNetset2 bool
-			err := flowTester.IterFlows("file", func(flowLog flowlog.FlowLog) error {
+			err := flowTester.IterFlows(func(flowLog flowlog.FlowLog) error {
 				// Source for every log should be ep1_1.
 				if flowLog.SrcMeta.Type != "wep" || flowLog.SrcMeta.Namespace != "default" || flowLog.SrcMeta.Name != ep1_1.Name {
 					errs = append(errs, fmt.Sprintf("Unexpected source meta in flow: %#v", flowLog.SrcMeta))
@@ -426,7 +427,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests by client", []
 		dnsServer         *containers.Container
 		externalWorkloads []*containers.Container
 		tc                infrastructure.TopologyContainers
-		flowLogsReaders   []metrics.FlowLogReader
+		flowLogsReaders   []flowlogs.FlowLogReader
 		ep1_1, ep2_1      *workload.Workload
 
 		dnsServerIP string
@@ -454,6 +455,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests by client", []
 	BeforeEach(func() {
 		infra = getInfra()
 		opts = infrastructure.DefaultTopologyOptions()
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
 		externalWorkloads = infrastructure.StartExternalWorkloads("dns-external-workload", 2)
 		dnsRecords := map[string][]dns.RecordIP{
@@ -494,7 +496,7 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests by client", []
 		ep2_1 = workload.Run(tc.Felixes[1], "ep2-1", "default", "10.65.0.1", "8056", "tcp")
 		ep2_1.ConfigureInInfra(infra)
 
-		flowLogsReaders = []metrics.FlowLogReader{}
+		flowLogsReaders = []flowlogs.FlowLogReader{}
 		for _, f := range tc.Felixes {
 			flowLogsReaders = append(flowLogsReaders, f)
 		}
@@ -531,11 +533,11 @@ var _ = infrastructure.DatastoreDescribe("flow log with DNS tests by client", []
 		}
 
 		Eventually(func() error {
-			flowTester := metrics.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
+			flowTester := flowlogs.NewFlowTesterDeprecated(flowLogsReaders, true, true, 0)
 
 			errs := []string{}
 			// Track all errors before failing
-			flowTester.IterFlows("file", func(flowLog flowlog.FlowLog) error {
+			flowTester.IterFlows(func(flowLog flowlog.FlowLog) error {
 				if flowLog.SrcMeta.Type == "wep" && flowLog.DstMeta.Type == "net" && flowLog.DstMeta.AggregatedName == "pub" {
 					log.Debugf("FlowLog: %#v", flowLog)
 					if strings.Contains(flowLog.SrcMeta.AggregatedName, ep1_1.Name) {

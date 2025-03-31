@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2024 Tigera, Inc. All rights reserved.
+// Copyright (c) 2016-2025 Tigera, Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -784,7 +784,10 @@ func (r *DefaultRuleRenderer) endpointIptablesChain(
 				if endOfTierDrop && tier.DefaultAction != string(v3.Pass) {
 					nfqueueRule := r.NfqueueRuleDelayDeniedPacket(
 						r.NewMatch().MarkClear(r.MarkPass),
-						fmt.Sprintf("%s if no policies passed packet", r.IptablesFilterDenyAction()),
+						fmt.Sprintf("End of tier %s. %s if no policies passed packet",
+							tier.Name,
+							r.IptablesFilterDenyAction(),
+						),
 					)
 					if nfqueueRule != nil {
 						rules = append(rules, *nfqueueRule)
@@ -794,13 +797,21 @@ func (r *DefaultRuleRenderer) endpointIptablesChain(
 					//
 					// For untracked and pre-DNAT rules, we don't do that because there may be
 					// normal rules still to be applied to the packet in the filter table.
+					if r.FlowLogsEnabled {
+						rules = append(rules, generictables.Rule{
+							Match:  r.NewMatch().MarkClear(r.MarkPass),
+							Action: r.Nflog(nflogGroup, CalculateEndOfTierDropNFLOGPrefixStr(dir, tier.Name), 0),
+						})
+					}
 					rules = append(rules, generictables.Rule{
 						Match:  r.NewMatch().MarkClear(r.MarkPass),
-						Action: r.Nflog(nflogGroup, CalculateEndOfTierDropNFLOGPrefixStr(dir, tier.Name), 0),
+						Action: r.IptablesFilterDenyAction(),
+						Comment: []string{fmt.Sprintf("End of tier %s. %s if no policies passed packet",
+							tier.Name,
+							r.IptablesFilterDenyAction()),
+						},
 					})
-
-					rules = append(rules, r.DropRules(r.NewMatch().MarkClear(r.MarkPass), fmt.Sprintf("%s if no policies passed packet", r.IptablesFilterDenyAction()))...)
-				} else {
+				} else if r.FlowLogsEnabled {
 					// If we do not require an end of tier drop (i.e. because all of the policies in the tier are
 					// staged), then add an end of tier pass nflog action so that we can at least track that we
 					// would hit end of tier drop. This simplifies the processing in the collector.
@@ -859,10 +870,12 @@ func (r *DefaultRuleRenderer) endpointIptablesChain(
 		//              At least the magic 1 and 2 need to be combined with the equivalent in CalculateActions.
 		// No profile matched the packet: drop it.
 		// if dropIfNoProfilesMatched {
-		rules = append(rules, generictables.Rule{
-			Match:  r.NewMatch(),
-			Action: r.Nflog(nflogGroup, CalculateNoMatchProfileNFLOGPrefixStr(dir), 0),
-		})
+		if r.FlowLogsEnabled {
+			rules = append(rules, generictables.Rule{
+				Match:  r.NewMatch(),
+				Action: r.Nflog(nflogGroup, CalculateNoMatchProfileNFLOGPrefixStr(dir), 0),
+			})
+		}
 
 		rules = append(rules, r.DropRules(r.NewMatch(), endOfChainDropComment)...)
 	}

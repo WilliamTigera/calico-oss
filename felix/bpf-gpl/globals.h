@@ -1,5 +1,5 @@
 // Project Calico BPF dataplane programs.
-// Copyright (c) 2020-2022 Tigera, Inc. All rights reserved.
+// Copyright (c) 2020-2025 Tigera, Inc. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
 
 #ifndef __CALI_GLOBALS_H__
@@ -57,7 +57,8 @@ enum cali_globals_flags {
 	CALI_GLOBALS_NO_DSR_CIDRS = 0x00000080,
 	CALI_GLOBALS_LO_UDP_ONLY = 0x00000100,
 	CALI_GLOBALS_DNS_INLINE = 0x00000200,
-	CALI_GLOBALS_REDIRECT_PEER		= 0x00000400,
+	CALI_GLOBALS_REDIRECT_PEER = 0x00000400,
+	CALI_GLOBALS_FLOWLOGS_ENABLED = 0x00000800,
 };
 
 struct cali_ctlb_globals {

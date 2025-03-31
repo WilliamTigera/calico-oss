@@ -3349,6 +3349,19 @@ Configures the interval at which Felix exports flow logs.
 | `FelixConfiguration` schema | Duration string, for example <code>1m30s123ms</code> or <code>1h5m</code>. |
 | Default value (YAML) | `5m0s` |
 
+### `FlowLogsGoldmaneServer` (config file) / `flowLogsGoldmaneServer` (YAML)
+
+FlowLogGoldmaneServer is the flow server endpoint to which flow data should be published.
+
+| Detail |   |
+| --- | --- |
+| Environment variable | `FELIX_FlowLogsGoldmaneServer` |
+| Encoding (env var/config file) | String |
+| Default value (above encoding) | none |
+| `FelixConfiguration` field | `flowLogsGoldmaneServer` (YAML) `FlowLogsGoldmaneServer` (Go API) |
+| `FelixConfiguration` schema | String. |
+| Default value (YAML) | none |
+
 ### `FlowLogsMaxOriginalIPsIncluded` (config file) / `flowLogsMaxOriginalIPsIncluded` (YAML)
 
 Specifies the number of unique IP addresses (if relevant) that should be included in Flow logs.

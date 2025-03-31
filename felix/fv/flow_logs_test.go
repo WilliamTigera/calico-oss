@@ -25,7 +25,6 @@ import (
 	"github.com/projectcalico/calico/felix/fv/connectivity"
 	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	"github.com/projectcalico/calico/felix/fv/infrastructure"
-	"github.com/projectcalico/calico/felix/fv/metrics"
 	"github.com/projectcalico/calico/felix/fv/utils"
 	"github.com/projectcalico/calico/felix/fv/workload"
 	"github.com/projectcalico/calico/libcalico-go/lib/apiconfig"
@@ -106,7 +105,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 		opts              infrastructure.TopologyOptions
 		useInvalidLicense bool
 		expectation       expectation
-		flowLogsReaders   []metrics.FlowLogReader
+		flowLogsReaders   []flowlogs.FlowLogReader
 		client            client.Interface
 		wlHost1           [4]*workload.Workload
 		wlHost2           [2]*workload.Workload
@@ -119,7 +118,9 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 		infra = getInfra()
 		opts = infrastructure.DefaultTopologyOptions()
 		opts.IPIPEnabled = false
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
+		opts.ExtraEnvVars["FELIX_FLOWLOGSFILEENABLED"] = "true"
 		opts.ExtraEnvVars["FELIX_FLOWLOGSFLUSHINTERVAL"] = "120"
 		opts.ExtraEnvVars["FELIX_FLOWLOGSCOLLECTORDEBUGTRACE"] = "true"
 		opts.ExtraEnvVars["FELIX_BPFCONNTRACKTIMEOUTS"] = "TCPFinsSeen=30s"
@@ -369,13 +370,13 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			tc.Felixes[ii].Exec("conntrack", "-L")
 		}
 
-		flowLogsReaders = []metrics.FlowLogReader{}
+		flowLogsReaders = []flowlogs.FlowLogReader{}
 		for _, f := range tc.Felixes {
 			flowLogsReaders = append(flowLogsReaders, f)
 		}
 	})
 
-	checkFlowLogs := func(flowLogsOutput string) {
+	checkFlowLogs := func() {
 		// Here, by way of illustrating what we need to check for, are the allowed
 		// flow logs that we actually see for this test, as grouped and logged by
 		// the code below that includes "started:" and "completed:".
@@ -539,8 +540,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 		// Within 30s we should see the complete set of expected allow and deny
 		// flow logs.
 		Eventually(func() error {
-			flowTester := metrics.NewFlowTesterDeprecated(flowLogsReaders, expectation.labels, expectation.policies, 8055)
-			err := flowTester.PopulateFromFlowLogs(flowLogsOutput)
+			flowTester := flowlogs.NewFlowTesterDeprecated(flowLogsReaders, expectation.labels, expectation.policies, 8055)
+			err := flowTester.PopulateFromFlowLogs()
 			if err != nil {
 				return fmt.Errorf("error populating from flow logs: %s", err)
 			}
@@ -556,8 +557,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
-						metrics.NoService, 3, 1,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 3, 1,
+						[]flowlogs.ExpectedPolicy{
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 							{"dst", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -567,8 +568,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[1].Name+" "+wlHost2[1].WorkloadEndpoint.GenerateName+"*", wlHost2[1].IP,
-						metrics.NoService, 3, 1,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 3, 1,
+						[]flowlogs.ExpectedPolicy{
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 							{}, // ""
 						})
@@ -580,8 +581,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default "+wlHost1[0].Name+" "+wlHost1[0].WorkloadEndpoint.GenerateName+"*", wlHost1[0].IP,
 					"hep - host2-eth0 "+tc.Felixes[1].Hostname, tc.Felixes[1].IP,
-					metrics.NoService, 3, 1,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 3, 1,
+					[]flowlogs.ExpectedPolicy{
 						{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						{"dst", "allow", []string{"0|default|default.gnp-1|allow|0"}},
 					})
@@ -593,8 +594,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
 						"ns - ns-1 ns-1", tc.Felixes[0].IP,
-						metrics.NoService, 3, 1,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 3, 1,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -602,8 +603,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
 						"net - - pvt", tc.Felixes[0].IP,
-						metrics.NoService, 3, 1,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 3, 1,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -616,8 +617,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 							{"dst", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -627,8 +628,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[1].Name+" "+wlHost2[1].WorkloadEndpoint.GenerateName+"*", wlHost2[1].IP,
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 							{},
 						})
@@ -640,8 +641,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default "+wlHost1[0].Name+" "+wlHost1[0].WorkloadEndpoint.GenerateName+"*", wlHost1[0].IP,
 					"hep - host2-eth0 "+tc.Felixes[1].Hostname, tc.Felixes[1].IP,
-					metrics.NoService, 1, 3,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 3,
+					[]flowlogs.ExpectedPolicy{
 						{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						{"dst", "allow", []string{"0|default|default.gnp-1|allow|0"}},
 					})
@@ -653,8 +654,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
 						"ns - ns-1 ns-1", tc.Felixes[0].IP,
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -662,8 +663,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+wlHost2[0].Name+" "+wlHost2[0].WorkloadEndpoint.GenerateName+"*", wlHost2[0].IP,
 						"net - - pvt", tc.Felixes[0].IP,
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -675,8 +676,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default - wl-host1-*", "",
 					"wep default - wl-host2-*", "",
-					metrics.NoService, 1, 24,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 24,
+					[]flowlogs.ExpectedPolicy{
 						{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						{}, // ""
 					})
@@ -686,8 +687,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default - wl-host1-*", "",
 					"wep default - wl-host2-*", "",
-					metrics.NoService, 1, 12,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 12,
+					[]flowlogs.ExpectedPolicy{
 						{}, // ""
 						{"dst", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 					})
@@ -695,9 +696,9 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					errs = append(errs, fmt.Sprintf("Error agg for allowed; agg pod prefix; flow 2: %v", err))
 				}
 
-				var policies []metrics.ExpectedPolicy
+				var policies []flowlogs.ExpectedPolicy
 
-				policies = []metrics.ExpectedPolicy{
+				policies = []flowlogs.ExpectedPolicy{
 					{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 					{"dst", "allow", []string{"0|default|default.gnp-1|allow|0"}},
 				}
@@ -705,7 +706,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default - wl-host1-*", "",
 					"hep - - "+tc.Felixes[1].Hostname, "",
-					metrics.NoService, 1, 3, policies)
+					flowlogs.NoService, 1, 3, policies)
 				if err != nil {
 					errs = append(errs, fmt.Sprintf("Error agg for allowed; agg pod prefix; hep: %v", err))
 				}
@@ -714,8 +715,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default - wl-host2-*", "",
 						"ns - - ns-1", "",
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -723,8 +724,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default - wl-host2-*", "",
 						"net - - pvt", "",
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"src", "allow", []string{"0|__PROFILE__|__PROFILE__.default|allow|0"}},
 						})
@@ -740,8 +741,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[1].Name+" "+wlHost2[1].WorkloadEndpoint.GenerateName+"*", wlHost2[1].IP,
-						metrics.NoService, 3, 1,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 3, 1,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"dst", "deny", []string{"0|default|default/default.np-1|deny|0"}},
 						})
@@ -754,8 +755,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 					err = flowTester.CheckFlow(
 						"wep default "+source.Name+" "+source.WorkloadEndpoint.GenerateName+"*", source.IP,
 						"wep default "+wlHost2[1].Name+" "+wlHost2[1].WorkloadEndpoint.GenerateName+"*", wlHost2[1].IP,
-						metrics.NoService, 1, 3,
-						[]metrics.ExpectedPolicy{
+						flowlogs.NoService, 1, 3,
+						[]flowlogs.ExpectedPolicy{
 							{}, // ""
 							{"dst", "deny", []string{"0|default|default/default.np-1|deny|0"}},
 						})
@@ -767,8 +768,8 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				err = flowTester.CheckFlow(
 					"wep default - wl-host1-*", "",
 					"wep default - wl-host2-*", "",
-					metrics.NoService, 1, 12,
-					[]metrics.ExpectedPolicy{
+					flowlogs.NoService, 1, 12,
+					[]flowlogs.ExpectedPolicy{
 						{}, // ""
 						{"dst", "deny", []string{"0|default|default/default.np-1|deny|0"}},
 					})
@@ -791,11 +792,10 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 		}, "30s", "3s").ShouldNot(HaveOccurred())
 	}
 
-	cloudAndFile := func(flowLogsOutput string) {
+	cloudAndFile := func() {
 		BeforeEach(func() {
 			opts.ExtraEnvVars["FELIX_FLOWLOGSFLUSHINTERVAL"] = "2"
 			opts.ExtraEnvVars["FELIX_FLOWLOGSENABLEHOSTENDPOINT"] = "true"
-			opts.ExtraEnvVars["FELIX_FLOWLOGSFILEENABLED"] = "true"
 
 			// Defaults for how we expect flow logs to be generated.
 			expectation.labels = false
@@ -811,7 +811,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -822,7 +822,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -833,7 +833,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -844,7 +844,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -855,7 +855,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -866,7 +866,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -877,7 +877,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 
@@ -888,13 +888,13 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 			})
 
 			It("should get expected flow logs", func() {
-				checkFlowLogs(flowLogsOutput)
+				checkFlowLogs()
 			})
 		})
 	}
 
 	Context("File flow logs", func() {
-		Context("File output", func() { cloudAndFile("file") })
+		Context("File output", func() { cloudAndFile() })
 	})
 
 	Context("File flow logs only", func() {
@@ -911,7 +911,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 		})
 
 		It("should get expected flow logs", func() {
-			checkFlowLogs("file")
+			checkFlowLogs()
 		})
 
 		Context("with an expired license", func() {
@@ -927,7 +927,7 @@ var _ = infrastructure.DatastoreDescribe("_BPF-SAFE_ flow log tests", []apiconfi
 				attempts := 0
 				for time.Now().Before(endTime) || attempts < 2 {
 					for _, f := range tc.Felixes {
-						_, err := flowlogs.ReadFlowLogsFile(f.FlowLogDir())
+						_, err := f.FlowLogs()
 						Expect(err).To(BeAssignableToTypeOf(&os.PathError{}))
 					}
 					time.Sleep(1 * time.Second)
@@ -1005,6 +1005,7 @@ var _ = infrastructure.DatastoreDescribe("nat outgoing flow log tests", []apicon
 
 		infra = getInfra()
 		opts := infrastructure.DefaultTopologyOptions()
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
 		opts.ExtraEnvVars["FELIX_FLOWLOGSFLUSHINTERVAL"] = "2"
 		opts.ExtraEnvVars["FELIX_FLOWLOGSFILEENABLED"] = "true"
@@ -1046,7 +1047,7 @@ var _ = infrastructure.DatastoreDescribe("nat outgoing flow log tests", []apicon
 		var flows []flowlog.FlowLog
 		var err error
 		Eventually(func() error {
-			flows, err = flowlogs.ReadFlowLogs(tc.Felixes[0].FlowLogDir(), "file")
+			flows, err = tc.Felixes[0].FlowLogs()
 			return err
 		}, "20s", "1s").ShouldNot(HaveOccurred())
 
@@ -1087,6 +1088,7 @@ var _ = infrastructure.DatastoreDescribe("ipv6 flow log tests", []apiconfig.Data
 
 		infra = getInfra(iOpts...)
 		opts := infrastructure.DefaultTopologyOptions()
+		opts.FlowLogSource = infrastructure.FlowLogSourceFile
 
 		opts.EnableIPv6 = true
 		opts.IPIPEnabled = false
@@ -1243,7 +1245,7 @@ var _ = infrastructure.DatastoreDescribe("ipv6 flow log tests", []apiconfig.Data
 		var flows []flowlog.FlowLog
 		var err error
 		Eventually(func() int {
-			flows, err = flowlogs.ReadFlowLogs(tc.Felixes[0].FlowLogDir(), "file")
+			flows, err = tc.Felixes[0].FlowLogs()
 			if err != nil {
 				return 0
 			}
@@ -1278,20 +1280,3 @@ var _ = infrastructure.DatastoreDescribe("ipv6 flow log tests", []apiconfig.Data
 		Expect(numExpectedFlows).Should(Equal(2))
 	})
 })
-
-func countNodesWithNodeIP(c client.Interface) int {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
-
-	nodeList, err := c.Nodes().List(ctx, options.ListOptions{})
-	Expect(err).NotTo(HaveOccurred())
-
-	count := 0
-	for _, n := range nodeList.Items {
-		if n.Spec.BGP.IPv4Address != "" {
-			count++
-		}
-	}
-
-	return count
-}

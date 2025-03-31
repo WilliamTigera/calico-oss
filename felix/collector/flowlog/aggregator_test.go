@@ -290,7 +290,7 @@ func compareProcessReportedStats(actual, expected FlowProcessReportedStats) bool
 var _ = Describe("Flow log aggregator tests", func() {
 	// TODO(SS): Pull out the convenience functions for re-use.
 
-	expectFlowLog := func(fl FlowLog, t tuple.Tuple, nf, nfs, nfc int, a Action, fr reporterType, pi, po, bi, bo int, sm, dm endpoint.Metadata, dsvc FlowService, sl, dl map[string]string, fap, fep, fpp FlowPolicySet, fe FlowExtras, fpi testProcessInfo, tcps testTcpStats) {
+	expectFlowLog := func(fl FlowLog, t tuple.Tuple, nf, nfs, nfc int, a Action, fr ReporterType, pi, po, bi, bo int, sm, dm endpoint.Metadata, dsvc FlowService, sl, dl map[string]string, fap, fep, fpp FlowPolicySet, fe FlowExtras, fpi testProcessInfo, tcps testTcpStats) {
 		expectedFlow := newExpectedFlowLog(t, nf, nfs, nfc, a, fr, pi, po, bi, bo, sm, dm, dsvc, sl, dl, fap, fep, fpp, fe, fpi, tcps)
 
 		// We don't include the start and end time in the comparison, so copy to a new log without these

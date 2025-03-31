@@ -13,7 +13,7 @@ import (
 	"github.com/projectcalico/calico/felix/collector/flowlog"
 	"github.com/projectcalico/calico/felix/collector/types/endpoint"
 	"github.com/projectcalico/calico/felix/collector/types/tuple"
-	"github.com/projectcalico/calico/felix/fv/metrics"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	"github.com/projectcalico/calico/felix/ip"
 )
 
@@ -52,7 +52,7 @@ func makeLogSlice(n int) []*flowlog.FlowLog {
 
 		ip1, _ := ip.ParseIPAs16Byte("10.65.0.0")
 		ip2, _ := ip.ParseIPAs16Byte("10.65.1.0")
-		tup := tuple.Make(ip1, ip2, 6, metrics.SourcePortIsIncluded, 8080)
+		tup := tuple.Make(ip1, ip2, 6, flowlogs.SourcePortIsIncluded, 8080)
 
 		s[i] = &flowlog.FlowLog{
 			FlowMeta: flowlog.FlowMeta{
@@ -69,7 +69,7 @@ func makeLogSlice(n int) []*flowlog.FlowLog {
 					Name:           "foo-1234b",
 					AggregatedName: "foo-",
 				},
-				DstService: metrics.NoDestService,
+				DstService: flowlog.EmptyService,
 				Action:     "allow",
 				Reporter:   "src",
 			},

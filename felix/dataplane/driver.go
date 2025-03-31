@@ -1,4 +1,4 @@
-// Copyright (c) 2024 Tigera, Inc. All rights reserved.
+// Copyright (c) 2024-2025 Tigera, Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -278,6 +278,7 @@ func StartDataplaneDriver(
 				NetlinkTimeout:    configParams.NetlinkTimeoutSecs,
 			},
 			RulesConfig: rules.Config{
+				FlowLogsEnabled:       configParams.FlowLogsEnabled(),
 				NFTables:              configParams.NFTablesMode == "Enabled",
 				WorkloadIfacePrefixes: configParams.InterfacePrefixes(),
 
@@ -527,7 +528,6 @@ func StartDataplaneDriver(
 
 			KubernetesProvider: configParams.KubernetesProvider(),
 
-			Collector:                 collector,
 			DNSCacheFile:              configParams.GetDNSCacheFile(),
 			DNSCacheSaveInterval:      configParams.DNSCacheSaveInterval,
 			DNSCacheEpoch:             configParams.DNSCacheEpoch,
@@ -546,7 +546,9 @@ func StartDataplaneDriver(
 				MaxFiles:        configParams.CaptureMaxFiles,
 			},
 
-			LookupsCache: lc,
+			Collector:       collector,
+			LookupsCache:    lc,
+			FlowLogsEnabled: configParams.FlowLogsEnabled(),
 
 			BPFDNSPolicyMode:                 apiv3.BPFDNSPolicyMode(configParams.BPFDNSPolicyMode),
 			DNSPolicyNfqueueID:               configParams.DNSPolicyNfqueueID,

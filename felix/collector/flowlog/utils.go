@@ -8,6 +8,7 @@ import (
 
 	"github.com/projectcalico/calico/felix/calc"
 	"github.com/projectcalico/calico/felix/collector/types/metric"
+	"github.com/projectcalico/calico/felix/collector/utils"
 	"github.com/projectcalico/calico/felix/rules"
 )
 
@@ -19,12 +20,12 @@ const (
 	ActionAllow Action = "allow"
 	ActionDeny  Action = "deny"
 
-	ReporterSrc reporterType = "src"
-	ReporterDst reporterType = "dst"
+	ReporterSrc ReporterType = "src"
+	ReporterDst ReporterType = "dst"
 )
 
 // GetActionAndReporterFromRuleID converts the action to a string value.
-func getActionAndReporterFromRuleID(r *calc.RuleID) (a Action, flr reporterType) {
+func getActionAndReporterFromRuleID(r *calc.RuleID) (a Action, flr ReporterType) {
 	switch r.Action {
 	case rules.RuleActionDeny:
 		a = ActionDeny
@@ -40,32 +41,11 @@ func getActionAndReporterFromRuleID(r *calc.RuleID) (a Action, flr reporterType)
 	return
 }
 
-func flattenLabels(labels map[string]string) []string {
-	respSlice := []string{}
-	for k, v := range labels {
-		l := fmt.Sprintf("%v=%v", k, v)
-		respSlice = append(respSlice, l)
-	}
-	return respSlice
-}
-
-func unflattenLabels(labelSlice []string) map[string]string {
-	resp := map[string]string{}
-	for _, label := range labelSlice {
-		labelKV := strings.Split(label, "=")
-		if len(labelKV) != 2 {
-			continue
-		}
-		resp[labelKV[0]] = labelKV[1]
-	}
-	return resp
-}
-
 func labelsToString(labels map[string]string) string {
 	if labels == nil {
 		return "-"
 	}
-	return fmt.Sprintf("[%v]", strings.Join(flattenLabels(labels), ","))
+	return fmt.Sprintf("[%v]", strings.Join(utils.FlattenLabels(labels), ","))
 }
 
 func stringToLabels(labelStr string) map[string]string {
@@ -73,7 +53,7 @@ func stringToLabels(labelStr string) map[string]string {
 		return nil
 	}
 	labels := strings.Split(labelStr[1:len(labelStr)-1], ",")
-	return unflattenLabels(labels)
+	return utils.UnflattenLabels(labels)
 }
 
 func getService(svc metric.ServiceInfo) FlowService {

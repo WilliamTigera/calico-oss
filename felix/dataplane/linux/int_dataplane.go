@@ -281,7 +281,6 @@ type Config struct {
 	FlowLogsCollectProcessPath         bool
 	FlowLogsFileIncludeService         bool
 	FlowLogsFileDomainsLimit           int
-	NfNetlinkBufSize                   int
 
 	SidecarAccelerationEnabled bool
 
@@ -289,6 +288,12 @@ type Config struct {
 	DebugConsoleEnabled              bool
 	DebugUseShortPollIntervals       bool
 	DebugSimulateDataplaneApplyDelay time.Duration
+
+	// Flow logs related fields.
+	NfNetlinkBufSize int
+	Collector        collector.Collector
+	LookupsCache     *calc.LookupsCache
+	FlowLogsEnabled  bool
 
 	FelixHostname string
 	NodeIP        net.IP
@@ -311,9 +316,6 @@ type Config struct {
 
 	ExternalNetworkEnabled             bool
 	ExternalNetworkRoutingRulePriority int
-
-	// Optional stats collector
-	Collector collector.Collector
 
 	// AWS-specials.
 	AWSSecondaryIPSupport             string
@@ -357,8 +359,6 @@ type Config struct {
 	RouteSource string
 
 	KubernetesProvider felixconfig.Provider
-
-	LookupsCache *calc.LookupsCache
 }
 
 type UpdateBatchResolver interface {
@@ -1089,7 +1089,9 @@ func NewIntDataplaneDriver(config Config, stopChan chan *sync.WaitGroup) *Intern
 		processPathInfoCache         *events.BPFProcessPathCache
 	)
 
-	if config.BPFEnabled || config.FlowLogsCollectProcessInfo || config.FlowLogsCollectTcpStats {
+	// Initialisation needed for bpf.
+	if config.FlowLogsEnabled &&
+		(config.BPFEnabled || config.FlowLogsCollectProcessInfo || config.FlowLogsCollectTcpStats) {
 		var err error
 		// convert buffer size to bytes.
 		ringSize := config.BPFExportBufferSizeMB * 1024 * 1024
@@ -1241,11 +1243,14 @@ func NewIntDataplaneDriver(config Config, stopChan chan *sync.WaitGroup) *Intern
 				"- BPFHostNetworkedNAT is disabled.")
 		}
 
-		config.LookupsCache.EnableID64()
+		if config.LookupsCache != nil {
+			config.LookupsCache.EnableID64()
+		}
+
 		// Forwarding into an IPIP tunnel fails silently because IPIP tunnels are L3 devices and support for
 		// L3 devices in BPF is not available yet.  Disable the FIB lookup in that case.
 		fibLookupEnabled := !config.RulesConfig.IPIPEnabled
-		bpfEndpointManager, err = newBPFEndpointManager(
+		bpfEndpointManager, err = NewBPFEndpointManager(
 			nil,
 			&config,
 			bpfMaps,

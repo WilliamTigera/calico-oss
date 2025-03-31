@@ -34,7 +34,10 @@ import (
 
 	"github.com/projectcalico/calico/felix/bpf/jump"
 	"github.com/projectcalico/calico/felix/bpf/polprog"
+	"github.com/projectcalico/calico/felix/collector/flowlog"
+	"github.com/projectcalico/calico/felix/collector/goldmane"
 	"github.com/projectcalico/calico/felix/fv/containers"
+	"github.com/projectcalico/calico/felix/fv/flowlogs"
 	"github.com/projectcalico/calico/felix/fv/metrics"
 	"github.com/projectcalico/calico/felix/fv/tcpdump"
 	"github.com/projectcalico/calico/felix/fv/utils"
@@ -76,17 +79,20 @@ type Felix struct {
 	// If set, acts like an external IP of a node. Filled in by SetExternalIP().
 	ExternalIP string
 
-	startupDelayed   bool
-	restartDelayed   bool
-	Workloads        []workload
+	startupDelayed bool
+	restartDelayed bool
+	Workloads      []workload
+
 	cwlCallsExpected bool
 	cwlFile          string
 	cwlGroupName     string
 	cwlStreamName    string
 	cwlRetentionDays int64
-	uniqueName       string
 
 	TopologyOptions TopologyOptions
+
+	uniqueName     string
+	goldmaneServer *flowlogs.GoldmaneMock
 }
 
 type workload interface {
@@ -217,6 +223,13 @@ func RunFelix(infra DatastoreInfra, id int, options TopologyOptions) *Felix {
 	Expect(os.MkdirAll(logDir, 0o777)).NotTo(HaveOccurred())
 	args = append(args, "-v", logDir+":/var/log/calico/flowlogs")
 
+	var goldmaneServer *flowlogs.GoldmaneMock
+	if options.FlowLogSource == FlowLogSourceGoldmane {
+		sockAddr := fmt.Sprintf("%v/goldmane.sock", logDir)
+		goldmaneServer = flowlogs.NewGoldmaneMock(sockAddr)
+		goldmaneServer.Run()
+	}
+
 	if os.Getenv("FELIX_FV_NFTABLES") == "Enabled" {
 		log.Info("Enabling nftables with env var")
 		envVars["FELIX_NFTABLESMODE"] = "Enabled"
@@ -332,6 +345,7 @@ func RunFelix(infra DatastoreInfra, id int, options TopologyOptions) *Felix {
 		cwlRetentionDays: cwlRetentionDays,
 		uniqueName:       uniqueName,
 		TopologyOptions:  options,
+		goldmaneServer:   goldmaneServer,
 	}
 }
 
@@ -343,6 +357,9 @@ func (f *Felix) Stop() {
 		_ = f.ExecMayFail("rmdir", path.Join("/run/calico/cgroup/", f.Name))
 	}
 	f.Container.Stop()
+	if f.goldmaneServer != nil {
+		f.goldmaneServer.Stop()
+	}
 
 	if f.cwlCallsExpected {
 		Expect(cwLogDir + "/" + f.cwlFile).To(BeAnExistingFile())
@@ -361,6 +378,7 @@ func (f *Felix) Restart() {
 	oldPID := f.GetFelixPID()
 	f.Exec("kill", "-HUP", fmt.Sprint(oldPID))
 	Eventually(f.GetFelixPID, "10s", "100ms").ShouldNot(Equal(oldPID))
+	f.ResetGoldmaneFlows()
 }
 
 func (f *Felix) RestartWithDelayedStartup() func() {
@@ -371,6 +389,7 @@ func (f *Felix) RestartWithDelayedStartup() func() {
 	f.restartDelayed = true
 	f.Exec("touch", "/delay-felix-restart")
 	f.Exec("kill", "-HUP", fmt.Sprint(oldPID))
+	f.ResetGoldmaneFlows()
 	triggerChan := make(chan struct{})
 
 	go func() {
@@ -437,8 +456,36 @@ func (f *Felix) ProgramIptablesDNAT(serviceIP, targetIP, chain string, ipv6 bool
 	}
 }
 
-func (f *Felix) FlowLogDir() string {
-	return path.Join(cwLogDir, f.uniqueName)
+func (f *Felix) FlowLogs() ([]flowlog.FlowLog, error) {
+	switch f.TopologyOptions.FlowLogSource {
+	case FlowLogSourceFile:
+		return flowlogs.ReadFlowLogsFile(path.Join(cwLogDir, f.uniqueName))
+	case FlowLogSourceGoldmane:
+		return f.FlowLogsFromGoldmane()
+	default:
+		panic("unrecognized flow log source")
+	}
+}
+
+func (f *Felix) FlowLogsFromGoldmane() ([]flowlog.FlowLog, error) {
+	if f.goldmaneServer == nil {
+		return nil, fmt.Errorf("goldmane server not started")
+	}
+	flows := f.goldmaneServer.List()
+	if len(flows) == 0 {
+		return nil, fmt.Errorf("no flow log received yet")
+	}
+	var flogs []flowlog.FlowLog
+	for _, f := range flows {
+		flogs = append(flogs, goldmane.ConvertGoldmaneToFlowlog(f))
+	}
+	return flogs, nil
+}
+
+func (f *Felix) ResetGoldmaneFlows() {
+	if f.goldmaneServer != nil {
+		f.goldmaneServer.Flush()
+	}
 }
 
 func (f *Felix) ProgramNftablesDNAT(serviceIP, targetIP string, chain string, ipv6 bool) {
