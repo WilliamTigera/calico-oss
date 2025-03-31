@@ -52,5 +52,6 @@ Installing Oiler in a management cluster is done via the Helm charts repository
 ## Docs
 
 - https://docs.google.com/document/d/1KQdm6TEiyp9rNZaoauFlh5tPmnrtJLN6P6jnLuT0-RU/edit?tab=t.0
+- https://tigera.atlassian.net/wiki/spaces/ENG/pages/3122167815/ElasticSearch+Data+Migration+internal+-+external?force_transition=e610a214-b655-435e-8333-cf4562cadd88
 
 

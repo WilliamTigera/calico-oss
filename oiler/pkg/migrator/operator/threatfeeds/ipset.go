@@ -12,14 +12,15 @@ import (
 )
 
 type IPSetOperator struct {
-	backend     bapi.IPSetBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.IPSetBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f IPSetOperator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.IPSetThreatFeed], *operator.TimeInterval, error) {
 	logParams := v1.IPSetThreatFeedParams{
-		QueryParams:     operator.QueryParams(pageSize, current),
-		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters()},
+		QueryParams:     operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
+		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters(f.queryByGeneratedTime)},
 	}
 
 	list, err := f.backend.List(ctx, f.clusterInfo, &logParams)
@@ -44,9 +45,18 @@ func (f IPSetOperator) Write(ctx context.Context, items []v1.IPSetThreatFeed) (*
 	return f.backend.Create(ctx, f.clusterInfo, items)
 }
 
-func NewIPSetOperator(backend bapi.IPSetBackend, clusterInfo bapi.ClusterInfo) IPSetOperator {
+func (f IPSetOperator) Transform(items []v1.IPSetThreatFeed) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewIPSetOperator(backend bapi.IPSetBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) IPSetOperator {
 	return IPSetOperator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }

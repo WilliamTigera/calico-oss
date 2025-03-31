@@ -5,6 +5,7 @@ package checkpoint
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -96,7 +97,7 @@ func (c ConfigMapStorage) Write(ctx context.Context, checkpoint time.Time) error
 		if configmap.Data == nil {
 			configmap.Data = make(map[string]string)
 		}
-		configmap.Data["checkpoint"] = checkpoint.UTC().Format(time.RFC3339)
+		configmap.Data[checkpointKey] = checkpoint.UTC().Format(time.RFC3339)
 		_, err := c.k8sClient.CoreV1().ConfigMaps(c.namespace).Update(ctx, configmap, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -131,8 +132,9 @@ func NewRealK8sClient(kubeconfigPath string) (*kubernetes.Clientset, error) {
 
 // ConfigMapName is a helper function that creates the name of the config map
 func ConfigMapName(dataType bapi.DataType, cluster, tenant string) string {
+	normalizedDataType := strings.ReplaceAll(string(dataType), "_", "-")
 	if len(tenant) == 0 {
-		return fmt.Sprintf("%s-%s", dataType, cluster)
+		return fmt.Sprintf("%s-%s", normalizedDataType, cluster)
 	}
-	return fmt.Sprintf("%s-%s-%s", dataType, cluster, tenant)
+	return fmt.Sprintf("%s-%s-%s", normalizedDataType, cluster, tenant)
 }

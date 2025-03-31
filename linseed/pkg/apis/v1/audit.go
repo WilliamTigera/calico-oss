@@ -166,6 +166,8 @@ type internalEvent struct {
 	Cluster string `json:"cluster,omitempty"`
 	// GeneratedTime is populated by Linseed when ingesting data to Elasticsearch
 	GeneratedTime *time.Time `json:"generated_time,omitempty"`
+	// ID is populated by Linseed at read time and, it is not stored in Elasticsearch at document level
+	ID string `json:"id,omitempty"`
 }
 
 type internalObjectReference struct {
@@ -236,6 +238,7 @@ func (auditLog *AuditLog) MarshalJSON() ([]byte, error) {
 
 	val.Cluster = auditLog.Cluster
 	val.GeneratedTime = auditLog.GeneratedTime
+	val.ID = auditLog.ID
 
 	return json.Marshal(val)
 }
@@ -315,6 +318,7 @@ func (auditLog *AuditLog) UnmarshalJSON(data []byte) error {
 
 	auditLog.Cluster = internalEvent.Cluster
 	auditLog.GeneratedTime = internalEvent.GeneratedTime
+	auditLog.ID = internalEvent.ID
 
 	return nil
 }

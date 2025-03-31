@@ -209,6 +209,7 @@ func AssertRuntimeReportIDAndGeneratedTimeAndClusterAndReset(t *testing.T, expec
 	require.NotNil(t, item)
 	require.NotEmpty(t, item.ID)
 	item.ID = ""
+	item.Report.ID = ""
 
 	require.NotNil(t, item.Report.GeneratedTime)
 	item.Report.GeneratedTime = nil

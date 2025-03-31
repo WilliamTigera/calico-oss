@@ -12,14 +12,15 @@ import (
 )
 
 type Operator struct {
-	backend     bapi.RuntimeBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.RuntimeBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f Operator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.RuntimeReport], *operator.TimeInterval, error) {
 	logParams := v1.RuntimeReportParams{
-		QueryParams:     operator.QueryParams(pageSize, current),
-		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters()},
+		QueryParams:     operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
+		QuerySortParams: v1.QuerySortParams{Sort: operator.SortParameters(f.queryByGeneratedTime)},
 	}
 
 	list, err := f.backend.List(ctx, f.clusterInfo, &logParams)
@@ -41,16 +42,25 @@ func (f Operator) Read(ctx context.Context, current operator.TimeInterval, pageS
 }
 
 func (f Operator) Write(ctx context.Context, items []v1.RuntimeReport) (*v1.BulkResponse, error) {
-	reports := make([]v1.Report, len(items))
+	var reports []v1.Report
 	for _, item := range items {
 		reports = append(reports, item.Report)
 	}
 	return f.backend.Create(ctx, f.clusterInfo, reports)
 }
 
-func NewOperator(backend bapi.RuntimeBackend, clusterInfo bapi.ClusterInfo) Operator {
+func (f Operator) Transform(items []v1.RuntimeReport) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewOperator(backend bapi.RuntimeBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) Operator {
 	return Operator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }

@@ -15,9 +15,9 @@ import (
 
 const (
 	// EnvConfigPrefix represents the prefix used to load ENV variables required for startup
-	EnvConfigPrefix  = "OILER"
-	OilerCompareMode = "compare"
-	OilerMigrateMode = "migrate"
+	EnvConfigPrefix   = "OILER"
+	OilerValidateMode = "validate"
+	OilerMigrateMode  = "migrate"
 )
 
 type OilerMode string
@@ -35,23 +35,22 @@ type Config struct {
 	ElasticTimeOut  time.Duration `split_words:"true" default:"5m"`
 	WaitForNewData  time.Duration `split_words:"true" default:"60s"`
 
-	KubeConfig string `envconfig:"KUBECONFIG"`
-	Namespace  string `split_words:"true" default:"tigera-elasticsearch"`
+	KubeConfig  string `envconfig:"KUBECONFIG"`
+	Namespace   string `split_words:"true" default:"tigera-elasticsearch"`
+	MetricsPort int    `split_words:"true" default:"8080"`
 
 	// Primary Elastic configuration. These configurations will be prefixed with PRIMARY
 	// Example: OILER_PRIMARY_ELASTIC_HOST=localhost or PRIMARY_ELASTIC_HOST=localhost
 	PrimaryElasticClient *linseed.ElasticClientConfig
 	PrimaryBackend       linseed.BackendType `envconfig:"PRIMARY_BACKEND" default:"elastic-multi-index"`
 	PrimaryTenantID      string              `envconfig:"PRIMARY_TENANT_ID" default:""`
-	//PrimaryClusterID     string              `envconfig:"PRIMARY_CLUSTER_ID" default:""`
-	Clusters []string `split_words:"true"`
+	Clusters             []string            `split_words:"true"`
 
 	// Secondary Elastic configuration. These configurations will be prefixed with SECONDARY
 	// Example: OILER_SECONDARY_ELASTIC_HOST=localhost or SECONDARY_ELASTIC_HOST=localhost
 	SecondaryElasticClient *linseed.ElasticClientConfig
 	SecondaryBackend       linseed.BackendType `envconfig:"SECONDARY_BACKEND" default:"elastic-multi-index"`
 	SecondaryTenantID      string              `envconfig:"SECONDARY_TENANT_ID" default:""`
-	//SecondaryClusterID     string              `envconfig:"SECONDARY_CLUSTER_ID" default:""`
 }
 
 func LoadConfig() (*Config, error) {

@@ -12,14 +12,15 @@ import (
 )
 
 type SnapshotsOperator struct {
-	backend     bapi.SnapshotsBackend
-	clusterInfo bapi.ClusterInfo
+	backend              bapi.SnapshotsBackend
+	clusterInfo          bapi.ClusterInfo
+	queryByGeneratedTime bool
 }
 
 func (f SnapshotsOperator) Read(ctx context.Context, current operator.TimeInterval, pageSize int) (*v1.List[v1.Snapshot], *operator.TimeInterval, error) {
 	logParams := v1.SnapshotParams{
-		QueryParams: operator.QueryParams(pageSize, current),
-		Sort:        operator.SortParameters(),
+		QueryParams: operator.QueryParams(pageSize, current, f.queryByGeneratedTime),
+		Sort:        operator.SortParameters(f.queryByGeneratedTime),
 	}
 
 	list, err := f.backend.List(ctx, f.clusterInfo, &logParams)
@@ -44,9 +45,18 @@ func (f SnapshotsOperator) Write(ctx context.Context, items []v1.Snapshot) (*v1.
 	return f.backend.Create(ctx, f.clusterInfo, items)
 }
 
-func NewSnapshotsOperator(backend bapi.SnapshotsBackend, clusterInfo bapi.ClusterInfo) SnapshotsOperator {
+func (f SnapshotsOperator) Transform(items []v1.Snapshot) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
+}
+
+func NewSnapshotsOperator(backend bapi.SnapshotsBackend, clusterInfo bapi.ClusterInfo, queryByGeneratedTime bool) SnapshotsOperator {
 	return SnapshotsOperator{
-		backend:     backend,
-		clusterInfo: clusterInfo,
+		backend:              backend,
+		clusterInfo:          clusterInfo,
+		queryByGeneratedTime: queryByGeneratedTime,
 	}
 }

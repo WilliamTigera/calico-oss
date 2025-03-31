@@ -11,6 +11,10 @@ import (
 	"github.com/projectcalico/calico/linseed/pkg/testutils"
 )
 
+var excludeAuditFields = map[string]bool{
+	"id": true,
+}
+
 func TestCompareAuditStructAndTemplate(t *testing.T) {
 
 	t.Run("Check for Audit api and template matches", func(t *testing.T) {
@@ -21,7 +25,7 @@ func TestCompareAuditStructAndTemplate(t *testing.T) {
 		jsonLog, err := aud.MarshalJSON()
 		require.NoError(t, err)
 		m := utils.MustUnmarshalStructToMap(t, jsonLog)
-		require.True(t, utils.CheckFieldsInJSON(t, m, auditMap["properties"].(map[string]interface{}), nil))
+		require.True(t, utils.CheckFieldsInJSON(t, m, auditMap["properties"].(map[string]interface{}), excludeAuditFields))
 	})
 
 	t.Run("Check for Audit api and template not matches", func(t *testing.T) {
@@ -31,6 +35,6 @@ func TestCompareAuditStructAndTemplate(t *testing.T) {
 		require.NoError(t, err)
 		m := utils.MustUnmarshalStructToMap(t, jsonLog)
 		m["unknown"] = "unknown"
-		require.False(t, utils.CheckFieldsInJSON(t, m, auditMap["properties"].(map[string]interface{}), nil))
+		require.False(t, utils.CheckFieldsInJSON(t, m, auditMap["properties"].(map[string]interface{}), excludeAuditFields))
 	})
 }

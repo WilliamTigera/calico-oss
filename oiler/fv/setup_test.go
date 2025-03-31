@@ -22,6 +22,7 @@ import (
 	"github.com/projectcalico/calico/libcalico-go/lib/logutils"
 	"github.com/projectcalico/calico/linseed/pkg/backend"
 	bapi "github.com/projectcalico/calico/linseed/pkg/backend/api"
+	"github.com/projectcalico/calico/linseed/pkg/backend/legacy/index"
 	linseedconfig "github.com/projectcalico/calico/linseed/pkg/config"
 	"github.com/projectcalico/calico/lma/pkg/elastic"
 	"github.com/projectcalico/calico/oiler/pkg/checkpoint"
@@ -44,14 +45,44 @@ type TestSpec struct {
 	secondaryTenant string
 	backend         linseedconfig.BackendType
 	idx             bapi.Index
+	dataType        bapi.DataType
+	metricsPort     int
 }
 
+var (
+	MultiIndexMappings = map[bapi.DataType]bapi.Index{
+		bapi.AuditEELogs:    index.AuditLogEEMultiIndex,
+		bapi.AuditKubeLogs:  index.AuditLogKubeMultiIndex,
+		bapi.BGPLogs:        index.BGPLogMultiIndex,
+		bapi.DNSLogs:        index.DNSLogMultiIndex,
+		bapi.Benchmarks:     index.ComplianceBenchmarkMultiIndex,
+		bapi.ReportData:     index.ComplianceReportMultiIndex,
+		bapi.Snapshots:      index.ComplianceSnapshotMultiIndex,
+		bapi.Events:         index.EventsMultiIndex,
+		bapi.FlowLogs:       index.FlowLogMultiIndex,
+		bapi.L7Logs:         index.L7LogMultiIndex,
+		bapi.WAFLogs:        index.WAFLogMultiIndex,
+		bapi.RuntimeReports: index.RuntimeReportMultiIndex,
+		bapi.IPSet:          index.ThreatfeedsIPSetMultiIndex,
+		bapi.DomainNameSet:  index.ThreatfeedsIPSetMultiIndex,
+	}
+)
+
 func Run(t *testing.T, name string, specs []TestSpec, testFn func(t *testing.T, spec TestSpec)) {
+	metricPort := 8080
 	for _, spec := range specs {
-		t.Run(fmt.Sprintf("%s [%s]", name, spec.name), func(t *testing.T) {
-			defer setupAndTeardown(t)()
-			testFn(t, spec)
-		})
+		if spec.backend == linseedconfig.BackendTypeMultiIndex {
+			for k, v := range MultiIndexMappings {
+				spec.idx = v
+				spec.dataType = k
+				spec.metricsPort = metricPort
+				metricPort++
+				t.Run(fmt.Sprintf("%s [%s] %s", name, spec.name, spec.dataType), func(t *testing.T) {
+					defer setupAndTeardown(t)()
+					testFn(t, spec)
+				})
+			}
+		}
 	}
 }
 
@@ -62,9 +93,10 @@ type OilerArgs struct {
 	SecondTenantID   string
 	SecondaryBackend linseedconfig.BackendType
 
-	DataType bapi.DataType
-	JobName  string
-	Clusters []string
+	DataType    bapi.DataType
+	JobName     string
+	Clusters    []string
+	MetricsPort int
 }
 
 func RunOiler(t *testing.T, args OilerArgs) *containers.Container {
@@ -91,6 +123,7 @@ func RunOiler(t *testing.T, args OilerArgs) *containers.Container {
 		"-e", "KUBERNETES_SERVICE_HOST=127.0.0.1",
 		"-e", "KUBERNETES_SERVICE_PORT=6443",
 		"-e", "OILER_LOG_LEVEL=INFO",
+		"-e", fmt.Sprintf("OILER_METRICS_PORT=%d", args.MetricsPort),
 		"-e", "OILER_NAMESPACE=default",
 		"tigera/oiler:latest",
 	}
@@ -109,7 +142,7 @@ func setupAndTeardown(t *testing.T) func() {
 
 	// Set up context with a timeout.
 	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel = context.WithTimeout(context.Background(), 15*time.Minute)
 
 	// Get the current working directory, which we expect to by the fv dir.
 	var err error

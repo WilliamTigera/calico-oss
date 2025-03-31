@@ -9,8 +9,9 @@ import (
 	"github.com/projectcalico/calico/oiler/pkg/migrator/operator"
 )
 
-type AnyLog struct{}
-
+type AnyLog struct {
+	ID string
+}
 type ReadCommand struct {
 	Data *v1.List[AnyLog]
 	Next *operator.TimeInterval
@@ -39,4 +40,12 @@ func (f *Operator) Read(ctx context.Context, current operator.TimeInterval, page
 		return readCommand.Data, readCommand.Next, nil
 	}
 	return &v1.List[AnyLog]{}, &operator.TimeInterval{}, nil
+}
+
+func (f Operator) Transform(items []AnyLog) []string {
+	var result []string
+	for _, item := range items {
+		result = append(result, item.ID)
+	}
+	return result
 }

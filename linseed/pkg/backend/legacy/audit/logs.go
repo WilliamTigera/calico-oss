@@ -149,7 +149,7 @@ func (b *auditLogBackend) Create(ctx context.Context, kind v1.AuditLogType, i ba
 		// Add this log to the bulk request.
 		req := elastic.NewBulkIndexRequest().Index(alias).Doc(doc)
 		if b.migrationMode {
-			if len(id) == 0 {
+			if len(id) != 0 {
 				req.Id(id)
 			}
 		}

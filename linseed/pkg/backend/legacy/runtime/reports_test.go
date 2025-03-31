@@ -28,6 +28,7 @@ import (
 var (
 	client        lmaelastic.Client
 	b             bapi.RuntimeBackend
+	migration     bapi.RuntimeBackend
 	ctx           context.Context
 	cluster1      string
 	cluster2      string
@@ -72,8 +73,10 @@ func setupTest(t *testing.T, singleIndex bool) func() {
 	if singleIndex {
 		indexGetter = index.RuntimeReportsIndex()
 		b = runtime.NewSingleIndexBackend(client, cache, 10000, false)
+		migration = runtime.NewSingleIndexBackend(client, cache, 10000, true)
 	} else {
 		b = runtime.NewBackend(client, cache, 10000, false)
+		migration = runtime.NewBackend(client, cache, 10000, true)
 		indexGetter = index.RuntimeReportMultiIndex
 	}
 
@@ -423,6 +426,90 @@ func TestRuntimeSelection(t *testing.T) {
 	}
 }
 
+func TestRetrieveMostRecentRuntimeReports(t *testing.T) {
+	// Run each testcase both as a multi-tenant scenario, as well as a single-tenant case.
+	for _, tenant := range []string{backendutils.RandomTenantName(), ""} {
+		name := fmt.Sprintf("TestRetrieveMostRecentRuntimeReports (tenant=%s)", tenant)
+		RunAllModes(t, name, func(t *testing.T) {
+			clusterInfo := bapi.ClusterInfo{Tenant: tenant, Cluster: cluster1}
+
+			now := time.Now().UTC()
+
+			t1 := time.Unix(500, 0).UTC()
+			t2 := time.Unix(400, 0).UTC()
+			t3 := time.Unix(300, 0).UTC()
+
+			l1 := v1.Report{
+				StartTime: t1,
+				EndTime:   t1.Add(time.Duration(5) * time.Second),
+			}
+
+			l2 := v1.Report{
+				StartTime: t2,
+				EndTime:   t2.Add(time.Duration(5) * time.Second),
+			}
+
+			_, err := migration.Create(ctx, clusterInfo, []v1.Report{l1, l2})
+			require.NoError(t, err)
+
+			err = backendutils.RefreshIndex(ctx, client, indexGetter.Index(clusterInfo))
+			require.NoError(t, err)
+
+			// Query for logs
+			params := v1.RuntimeReportParams{
+				QueryParams: v1.QueryParams{
+					TimeRange: &lmav1.TimeRange{
+						Field: lmav1.FieldGeneratedTime,
+						From:  now.Add(-1 * time.Second).UTC(),
+					},
+				},
+				QuerySortParams: v1.QuerySortParams{
+					Sort: []v1.SearchRequestSortBy{
+						{
+							Field: string(lmav1.FieldGeneratedTime),
+						},
+					},
+				},
+			}
+			r, err := migration.List(ctx, clusterInfo, &params)
+			require.NoError(t, err)
+			require.Len(t, r.Items, 2)
+			lastGeneratedTime := r.Items[1].Report.GeneratedTime
+			backendutils.AssertRuntimeReportsIDAndGeneratedTimeAndClusterAndReset(t, cluster1, r)
+
+			// Assert that the logs are returned in the correct order.
+			require.Equal(t, l1, r.Items[0].Report)
+			require.Equal(t, l2, r.Items[1].Report)
+
+			l3 := v1.Report{
+				StartTime: t3,
+				EndTime:   t3.Add(time.Duration(5) * time.Second),
+			}
+			_, err = migration.Create(ctx, clusterInfo, []v1.Report{l3})
+			require.NoError(t, err)
+
+			err = backendutils.RefreshIndex(ctx, client, indexGetter.Index(clusterInfo))
+			require.NoError(t, err)
+
+			// Query the last ingested log
+			params.QueryParams = v1.QueryParams{
+				TimeRange: &lmav1.TimeRange{
+					Field: lmav1.FieldGeneratedTime,
+					From:  lastGeneratedTime.UTC(),
+				},
+			}
+
+			r, err = migration.List(ctx, clusterInfo, &params)
+			require.NoError(t, err)
+			require.Len(t, r.Items, 1)
+			backendutils.AssertRuntimeReportsIDAndGeneratedTimeAndClusterAndReset(t, cluster1, r)
+
+			// Assert that the logs are returned in the correct order.
+			require.Equal(t, l3, r.Items[0].Report)
+		})
+	}
+}
+
 func TestPreserveIDs(t *testing.T) {
 	// Run each testcase both as a multi-tenant scenario, as well as a single-tenant case.
 	for _, tenant := range []string{backendutils.RandomTenantName(), ""} {
@@ -446,7 +533,7 @@ func TestPreserveIDs(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 
-			resp, err := b.Create(ctx, clusterInfo, logs)
+			resp, err := migration.Create(ctx, clusterInfo, logs)
 			require.NoError(t, err)
 			require.Empty(t, resp.Errors)
 
@@ -458,20 +545,21 @@ func TestPreserveIDs(t *testing.T) {
 			allOpts := v1.RuntimeReportParams{
 				QueryParams: v1.QueryParams{
 					TimeRange: &lmav1.TimeRange{
-						From: testStart.Add(-5 * time.Second),
-						To:   time.Now().Add(5 * time.Minute),
+						Field: "generated_time",
+						From:  testStart.Add(-5 * time.Second),
+						To:    time.Now().Add(5 * time.Minute),
 					},
 				},
 			}
-			first, err := b.List(ctx, clusterInfo, &allOpts)
+			first, err := migration.List(ctx, clusterInfo, &allOpts)
 			require.NoError(t, err)
 			require.Len(t, first.Items, numLogs)
 
-			bulk, err := b.Create(ctx, clusterInfo, logs)
+			bulk, err := migration.Create(ctx, clusterInfo, logs)
 			require.NoError(t, err)
 			require.Empty(t, bulk.Errors)
 
-			second, err := b.List(ctx, clusterInfo, &allOpts)
+			second, err := migration.List(ctx, clusterInfo, &allOpts)
 			require.NoError(t, err)
 			require.Len(t, second.Items, numLogs)
 
