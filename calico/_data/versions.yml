@@ -7,7 +7,7 @@
     version: release-v1.38
     registry: quay.io
   calico:
-    minor_version: v3.29
+    minor_version: v3.30
     archive_path: archive
   components:
     cnx-manager:
