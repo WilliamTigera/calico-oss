@@ -15,8 +15,8 @@ import (
 // L7 Update represents the data that is sent to us straight from the envoy logs?
 type Update struct {
 	Tuple tuple.Tuple
-	SrcEp *calc.EndpointData
-	DstEp *calc.EndpointData
+	SrcEp calc.EndpointData
+	DstEp calc.EndpointData
 
 	Duration      int
 	DurationMax   int

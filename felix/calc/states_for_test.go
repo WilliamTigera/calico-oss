@@ -1638,10 +1638,7 @@ var vxlanWithWEPIPsAndWEP = vxlanWithWEPIPs.withKVUpdates(
 ).withIPSecBinding(
 	"192.168.0.3", "10.0.0.5",
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey2,
-		Endpoint: &remoteWlEp1New,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey2, &remoteWlEp1New),
 )
 
 // Add in another workload with the same IP, but on a different node - remoteHost1.
@@ -1681,10 +1678,7 @@ var vxlanWithWEPIPsAndWEPDuplicate = vxlanWithWEPIPsAndWEP.withKVUpdates(
 ).withIPSecBlacklist(
 	"10.0.0.5",
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &remoteWlEp1New,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &remoteWlEp1New),
 )
 
 // Minimal VXLAN set-up using Calico IPAM, all the data needed for a remote VTEP, a pool and a block.
@@ -3130,10 +3124,7 @@ var tproxyTwoLocalWEPsOneNoLabels = tproxyTwoLocalWEPs.withKVUpdates(
 var tproxyALPLocalAndRemoteWEP = tproxyALPLocalWEP.withKVUpdates(
 	KVPair{Key: remoteWlEpKey1, Value: &commRemoteWlEp1},
 ).withRemoteEndpoint(
-	&calc.EndpointData{
-		Key:      remoteWlEpKey1,
-		Endpoint: &commRemoteWlEp1,
-	},
+	calc.CalculateRemoteEndpoint(remoteWlEpKey1, &commRemoteWlEp1),
 ).withIPSet(
 	tproxydefs.ApplicationLayerPolicyIPSet, []string{
 		"10.0.0.1/32",

@@ -21,7 +21,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/tigera/api/pkg/lib/numorstring"
 
 	v3 "github.com/projectcalico/calico/libcalico-go/lib/apis/v3"
 	"github.com/projectcalico/calico/libcalico-go/lib/errors"
@@ -37,6 +36,12 @@ type WorkloadEndpointKey struct {
 	OrchestratorID string `json:"-"`
 	WorkloadID     string `json:"-"`
 	EndpointID     string `json:"-"`
+}
+
+func (key WorkloadEndpointKey) WorkloadOrHostEndpointKey() {}
+
+func (key WorkloadEndpointKey) Host() string {
+	return key.Hostname
 }
 
 func (key WorkloadEndpointKey) defaultPath() (string, error) {
@@ -84,6 +89,8 @@ func (key WorkloadEndpointKey) String() string {
 	return fmt.Sprintf("WorkloadEndpoint(node=%s, orchestrator=%s, workload=%s, name=%s)",
 		key.Hostname, key.OrchestratorID, key.WorkloadID, key.EndpointID)
 }
+
+var _ EndpointKey = WorkloadEndpointKey{}
 
 type WorkloadEndpointListOptions struct {
 	Hostname       string
@@ -178,11 +185,21 @@ type WorkloadEndpoint struct {
 	ApplicationLayer           *ApplicationLayer `json:"application_layer,omitempty"`
 }
 
-type EndpointPort struct {
-	Name     string               `json:"name" validate:"name"`
-	Protocol numorstring.Protocol `json:"protocol"`
-	Port     uint16               `json:"port" validate:"gt=0"`
+func (e *WorkloadEndpoint) WorkloadOrHostEndpoint() {}
+
+func (e *WorkloadEndpoint) GetLabels() map[string]string {
+	return e.Labels
 }
+
+func (e *WorkloadEndpoint) GetProfileIDs() []string {
+	return e.ProfileIDs
+}
+
+func (e *WorkloadEndpoint) GetPorts() []EndpointPort {
+	return e.Ports
+}
+
+var _ Endpoint = (*WorkloadEndpoint)(nil)
 
 // IPNat contains a single NAT mapping for a WorkloadEndpoint resource.
 type IPNAT struct {

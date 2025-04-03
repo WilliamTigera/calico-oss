@@ -85,14 +85,14 @@ var _ = Describe("DNS Log Reporter", func() {
 		dns.Questions = append(dns.Questions, testutils.MakeQ("google.com"))
 		dns.Answers = append(dns.Answers, testutils.MakeA("google.com", "1.1.1.1"))
 
-		client1 := &calc.EndpointData{
-			Key: model.WorkloadEndpointKey{
+		client1 := calc.CalculateRemoteEndpoint(
+			model.WorkloadEndpointKey{
 				Hostname:       "host1",
 				OrchestratorID: "k8s",
 				WorkloadID:     "alice/test1-a345cf",
 				EndpointID:     "ep1",
 			},
-			Endpoint: &model.WorkloadEndpoint{
+			&model.WorkloadEndpoint{
 				Name:         "test1-a345cf",
 				GenerateName: "test1",
 				Labels: map[string]string{
@@ -102,15 +102,15 @@ var _ = Describe("DNS Log Reporter", func() {
 					"specific": "socks",
 				},
 			},
-		}
-		client2 := &calc.EndpointData{
-			Key: model.WorkloadEndpointKey{
+		)
+		client2 := calc.CalculateRemoteEndpoint(
+			model.WorkloadEndpointKey{
 				Hostname:       "host1",
 				OrchestratorID: "k8s",
 				WorkloadID:     "alice/test1-56dca3",
 				EndpointID:     "ep2",
 			},
-			Endpoint: &model.WorkloadEndpoint{
+			&model.WorkloadEndpoint{
 				Name:         "test1-56dca3",
 				GenerateName: "test1",
 				Labels: map[string]string{
@@ -120,7 +120,7 @@ var _ = Describe("DNS Log Reporter", func() {
 					"specific": "shoes",
 				},
 			},
-		}
+		)
 		err := r.Report(Update{
 			ClientEP: client1,
 			ClientIP: net.ParseIP("1.2.3.4"),

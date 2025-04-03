@@ -95,8 +95,8 @@ type Update struct {
 	OrigSourceIPs   *boundedset.BoundedSet
 
 	// Endpoint information.
-	SrcEp      *calc.EndpointData
-	DstEp      *calc.EndpointData
+	SrcEp      calc.EndpointData
+	DstEp      calc.EndpointData
 	DstService ServiceInfo
 
 	// Top level egress Domains.
@@ -142,12 +142,12 @@ func (mu Update) String() string {
 		origIPs          []net.IP
 	)
 	if mu.SrcEp != nil {
-		srcName = utils.EndpointName(mu.SrcEp.Key)
+		srcName = utils.EndpointName(mu.SrcEp.Key())
 	} else {
 		srcName = utils.UnknownEndpoint
 	}
 	if mu.DstEp != nil {
-		dstName = utils.EndpointName(mu.DstEp.Key)
+		dstName = utils.EndpointName(mu.DstEp.Key())
 	} else {
 		dstName = utils.UnknownEndpoint
 	}

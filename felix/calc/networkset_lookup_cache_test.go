@@ -33,7 +33,7 @@ var _ = Describe("NetworkSetLookupsCache IP tests", func() {
 			ec.OnUpdate(update)
 			ed, ok := ec.GetNetworkSetFromIP(addrB)
 			Expect(ok).To(BeTrue(), c)
-			Expect(ed.Key).To(Equal(key))
+			Expect(ed.Key()).To(Equal(key))
 
 			update = api.Update{
 				KVPair: model.KVPair{
@@ -71,9 +71,9 @@ var _ = Describe("NetworkSetLookupsCache IP tests", func() {
 			ed, ok := ec.GetNetworkSetFromIP(addrB)
 			if exists {
 				Expect(ok).To(BeTrue(), name+"\n"+ec.DumpNetworksets())
-				Expect(ed.Key).To(Equal(key), ec.DumpNetworksets())
+				Expect(ed.Key()).To(Equal(key), ec.DumpNetworksets())
 				if labels != nil {
-					Expect(ed.Networkset.(*model.NetworkSet).Labels).To(Equal(labels), ec.DumpNetworksets())
+					Expect(ed.Labels()).To(Equal(labels), ec.DumpNetworksets())
 				}
 			} else {
 				Expect(ok).To(BeFalse(), name+".\n"+ec.DumpNetworksets())
@@ -194,7 +194,7 @@ var _ = Describe("NetworkSetLookupsCache IP tests", func() {
 			ed, ok := ec.GetNetworkSetFromIP(addrB)
 			if exists {
 				Expect(ok).To(BeTrue(), name+"\n"+ec.DumpNetworksets())
-				Expect(ed.Key).To(Equal(key))
+				Expect(ed.Key()).To(Equal(key))
 			} else {
 				Expect(ok).To(BeFalse(), name+".\n"+ec.DumpNetworksets())
 			}
@@ -223,12 +223,12 @@ var _ = Describe("NetworkSetLookupsCache Egress domain tests", func() {
 			ed, ok := ec.GetNetworkSetFromEgressDomain(domain1)
 			Expect(ok).To(Equal(before1))
 			if ok {
-				Expect(ed.Key).To(Equal(netSet1Key))
+				Expect(ed.Key()).To(Equal(netSet1Key))
 			}
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain2)
 			Expect(ok).To(Equal(before2))
 			if ok {
-				Expect(ed.Key).To(Equal(netSet1Key))
+				Expect(ed.Key()).To(Equal(netSet1Key))
 			}
 
 			update = api.Update{
@@ -242,12 +242,12 @@ var _ = Describe("NetworkSetLookupsCache Egress domain tests", func() {
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain1)
 			Expect(ok).To(Equal(after1))
 			if ok {
-				Expect(ed.Key).To(Equal(netSet1Key))
+				Expect(ed.Key()).To(Equal(netSet1Key))
 			}
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain2)
 			Expect(ok).To(Equal(after2))
 			if ok {
-				Expect(ed.Key).To(Equal(netSet1Key))
+				Expect(ed.Key()).To(Equal(netSet1Key))
 			}
 
 			update = api.Update{
@@ -281,12 +281,12 @@ var _ = Describe("NetworkSetLookupsCache Egress domain tests", func() {
 			ec.OnUpdate(update)
 			ed, ok := ec.GetNetworkSetFromEgressDomain(domain1)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet1Key))
+			Expect(ed.Key()).To(Equal(netSet1Key))
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain2)
 			Expect(ok).To(BeFalse())
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain12)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet1Key))
+			Expect(ed.Key()).To(Equal(netSet1Key))
 
 			// Add networkset 2. Check domain1 still returns netset1, domain2 returns netset2 and domain12 returns
 			// either networkset.
@@ -300,13 +300,13 @@ var _ = Describe("NetworkSetLookupsCache Egress domain tests", func() {
 			ec.OnUpdate(update)
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain1)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet1Key))
+			Expect(ed.Key()).To(Equal(netSet1Key))
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain2)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet2Key))
+			Expect(ed.Key()).To(Equal(netSet2Key))
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain12)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(BeElementOf(netSet1Key, netSet2Key))
+			Expect(ed.Key()).To(BeElementOf(netSet1Key, netSet2Key))
 
 			// Delete networkset 1.  Check domain1 is not present and check domain2 and domain12 both return netset2.
 			update = api.Update{
@@ -320,10 +320,10 @@ var _ = Describe("NetworkSetLookupsCache Egress domain tests", func() {
 			Expect(ok).To(BeFalse())
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain2)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet2Key))
+			Expect(ed.Key()).To(Equal(netSet2Key))
 			ed, ok = ec.GetNetworkSetFromEgressDomain(domain12)
 			Expect(ok).To(BeTrue())
-			Expect(ed.Key).To(Equal(netSet2Key))
+			Expect(ed.Key()).To(Equal(netSet2Key))
 
 			// Delete networkset 1.  There should be no domain name mappings now.
 			update = api.Update{
