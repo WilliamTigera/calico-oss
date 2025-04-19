@@ -50,7 +50,6 @@ clean:
 	rm -f manifests/ocp.tgz
 
 ci-preflight-checks:
-<<<<<<< HEAD
 	$(MAKE) check-go-mod
 	$(MAKE) check-dockerfiles
 	$(MAKE) check-gotchas
