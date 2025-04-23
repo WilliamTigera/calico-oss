@@ -13,6 +13,7 @@ describe('usePromotionsContent', () => {
             cluster_id: 'cluster-id',
             cluster_type: 'cluster-type',
             calico_version: 'cluster-version',
+            calico_cloud_url: 'https://cloud-url/api',
         };
         const response: BannerContent = {
             bannerLink: 'banner-link',
